@@ -4,18 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
     Title="登录"
-    Width="420" Height="340"
-    WindowStartupLocation="CenterScreen"
+    Width="420"
+    Height="340"
+    NonClientAreaHeight="36"
     ResizeMode="NoResize"
     ShowNonClientArea="True"
-    NonClientAreaHeight="36"
-    Style="{StaticResource WindowWin10}">
+    Style="{StaticResource WindowWin10}"
+    WindowStartupLocation="CenterScreen">
 
     <pf:Window.NonClientAreaContent>
-        <TextBlock VerticalAlignment="Center" Margin="12,0"
-                   FontSize="14" FontWeight="SemiBold"
-                   Foreground="{DynamicResource PrimaryTextBrush}"
-                   Text="绿鑫资源 — 智能过磅系统" />
+        <TextBlock
+            Margin="12,0"
+            VerticalAlignment="Center"
+            FontSize="14"
+            FontWeight="SemiBold"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            Text="绿鑫资源 — 智能过磅系统" />
     </pf:Window.NonClientAreaContent>
 
     <Grid Margin="48,24,48,32">
@@ -35,29 +39,43 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="欢迎登录"
-                   FontSize="20" FontWeight="Bold"
-                   Foreground="{DynamicResource PrimaryTextBrush}"
-                   HorizontalAlignment="Center" />
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            FontSize="20"
+            FontWeight="Bold"
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            Text="欢迎登录" />
 
-        <TextBlock Grid.Row="2" Text="用户名"
-                   Foreground="{DynamicResource SecondaryTextBrush}" />
-        <TextBox Grid.Row="4" x:Name="TxtUsername"
-                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBlock
+            Grid.Row="2"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            Text="用户名" />
+        <TextBox
+            x:Name="TxtUsername"
+            Grid.Row="4"
+            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
 
-        <TextBlock Grid.Row="6" Text="密码"
-                   Foreground="{DynamicResource SecondaryTextBrush}" />
-        <PasswordBox Grid.Row="8" x:Name="PwdBox"
-                     PasswordChanged="PwdBox_PasswordChanged" />
+        <TextBlock
+            Grid.Row="6"
+            Foreground="{DynamicResource SecondaryTextBrush}"
+            Text="密码" />
+        <PasswordBox
+            x:Name="PwdBox"
+            Grid.Row="8"
+            PasswordChanged="PwdBox_PasswordChanged" />
 
-        <TextBlock Grid.Row="10"
-                   Foreground="{DynamicResource DangerBrush}"
-                   Text="{Binding ErrorMessage}"
-                   Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <TextBlock
+            Grid.Row="10"
+            Foreground="{DynamicResource DangerBrush}"
+            Text="{Binding ErrorMessage}"
+            Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-        <Button Grid.Row="12" Content="登 录"
-                Command="{Binding LoginCommand}"
-                Style="{StaticResource ButtonPrimary}"
-                Height="36" />
+        <Button
+            Grid.Row="12"
+            Height="36"
+            Command="{Binding LoginCommand}"
+            Content="登 录"
+            Style="{StaticResource ButtonPrimary}" />
     </Grid>
 </pf:Window>

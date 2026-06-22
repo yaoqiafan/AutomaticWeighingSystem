@@ -50,6 +50,8 @@ public partial class App : PrismApplication
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        var log = Container.Resolve<ILogService>();
+        log.Info("系统启动", "App");
         InitializeSerialPort();
         Container.Resolve<IRegionManager>()
             .RequestNavigate(RegionNames.Main, nameof(AWS.UI.Views.Weighing.WeighingView));
@@ -84,6 +86,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<AwsDbContext>();
         containerRegistry.RegisterSingleton<DynamicArchiveManager>();
 
+        containerRegistry.RegisterSingleton<ILogService, LogService>();
         containerRegistry.RegisterSingleton<IUserService, UserService>();
         containerRegistry.RegisterSingleton<ISerialPortService, SerialPortService>();
         containerRegistry.RegisterSingleton<IWeighingService, WeighingService>();

@@ -78,7 +78,7 @@
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="首次重量" Style="{StaticResource LabelStyle}" />
                 <TextBlock Grid.Row="2" Grid.Column="1"
                            Style="{StaticResource ValueStyle}" FontWeight="SemiBold">
-                    <Run Text="{Binding QueueItem.FirstWeight, StringFormat='{}{0:F1}'}" />
+                    <Run Text="{Binding QueueItem.FirstWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                     <Run Text=" kg" />
                 </TextBlock>
 
@@ -115,7 +115,7 @@
 
                     <TextBlock FontSize="32" FontWeight="Bold"
                                Foreground="{DynamicResource PrimaryTextBrush}">
-                        <Run Text="{Binding CurrentWeight, StringFormat='{}{0:F1}'}" />
+                        <Run Text="{Binding CurrentWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                     </TextBlock>
                     <TextBlock Text=" kg" FontSize="16" VerticalAlignment="Bottom"
                                Margin="4,0,0,4"
@@ -145,7 +145,7 @@
                                HorizontalAlignment="Center" />
                     <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"
                                Foreground="{DynamicResource PrimaryTextBrush}">
-                        <Run Text="{Binding GrossWeight, StringFormat='{}{0:F1}'}" />
+                        <Run Text="{Binding GrossWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                         <Run Text=" kg" FontSize="11" />
                     </TextBlock>
                 </StackPanel>
@@ -155,7 +155,7 @@
                                HorizontalAlignment="Center" />
                     <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"
                                Foreground="{DynamicResource PrimaryTextBrush}">
-                        <Run Text="{Binding TareWeight, StringFormat='{}{0:F1}'}" />
+                        <Run Text="{Binding TareWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                         <Run Text=" kg" FontSize="11" />
                     </TextBlock>
                 </StackPanel>
@@ -165,7 +165,7 @@
                                HorizontalAlignment="Center" />
                     <TextBlock FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
                                Foreground="#4CAF50">
-                        <Run Text="{Binding NetWeight, StringFormat='{}{0:F1}'}" />
+                        <Run Text="{Binding NetWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                         <Run Text=" kg" FontSize="12" />
                     </TextBlock>
                 </StackPanel>

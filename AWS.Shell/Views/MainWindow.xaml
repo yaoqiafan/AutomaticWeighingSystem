@@ -60,6 +60,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
+            <RowDefinition Height="Auto" />   <!-- 日志面板（折叠时占 0 高） -->
             <RowDefinition Height="32" />
         </Grid.RowDefinitions>
 
@@ -75,7 +76,7 @@
                     BorderThickness="0,0,1,0">
                 <pf:SideMenu x:Name="SideNav"
                              Width="180" Margin="4"
-                             ExpandMode="Freedom"
+                             ExpandMode="ShowAll"
                              SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}">
                     <pf:Interaction.Triggers>
                         <pf:EventTrigger EventName="SelectionChanged">
@@ -85,51 +86,122 @@
                     </pf:Interaction.Triggers>
 
                     <!-- 过磅操作 -->
-                    <pf:SideMenuItem Header="过磅操作" Tag="WeighingView">
+                    <pf:SideMenuItem Header="过磅操作" Tag="WeighingView"
+                                     FontSize="{DynamicResource FontSize.Body.Standard}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="ScaleBalance" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="主操作台" Tag="WeighingView" />
-                        <pf:SideMenuItem Header="待处理队列" Tag="QueueView" />
+                        <pf:SideMenuItem Header="主操作台" Tag="WeighingView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="MonitorDashboard" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="待处理队列" Tag="QueueView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="FormatListBulleted" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
                     <!-- 数据查询 -->
-                    <pf:SideMenuItem Header="数据查询" Tag="ArchiveQueryView">
+                    <pf:SideMenuItem Header="数据查询" Tag="ArchiveQueryView"
+                                     FontSize="{DynamicResource FontSize.Body.Standard}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="DatabaseSearch" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="存档查询" Tag="ArchiveQueryView" />
-                        <pf:SideMenuItem Header="数据导出" Tag="ExportView" />
+                        <pf:SideMenuItem Header="存档查询" Tag="ArchiveQueryView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="FileSearch" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="数据导出" Tag="ExportView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="FileExport" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
                     <!-- 统计分析 -->
-                    <pf:SideMenuItem Header="统计分析" Tag="StatisticsView">
+                    <pf:SideMenuItem Header="统计分析" Tag="StatisticsView"
+                                     FontSize="{DynamicResource FontSize.Body.Standard}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="ChartBar" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="数据统计" Tag="StatisticsView" />
+                        <pf:SideMenuItem Header="数据统计" Tag="StatisticsView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="ChartLine" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
                     <!-- 基础数据（Admin） -->
                     <pf:SideMenuItem Header="基础数据"
+                                     FontSize="{DynamicResource FontSize.Body.Standard}"
                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="DatabaseEdit" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="客户管理" Tag="CustomerView" />
-                        <pf:SideMenuItem Header="货物种类" Tag="GoodsCategoryView" />
-                        <pf:SideMenuItem Header="车辆管理" Tag="VehicleView" />
+                        <pf:SideMenuItem Header="客户管理" Tag="CustomerView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="AccountGroup" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="货物种类" Tag="GoodsCategoryView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="PackageVariant" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="车辆管理" Tag="VehicleView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="Truck" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
                     <!-- 系统设置（Admin） -->
                     <pf:SideMenuItem Header="系统设置"
+                                     FontSize="{DynamicResource FontSize.Body.Standard}"
                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="Cog" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="串口配置" Tag="SerialPortSettingView" />
-                        <pf:SideMenuItem Header="用户管理" Tag="UserManageView" />
-                        <pf:SideMenuItem Header="云同步" Tag="CloudSyncView" IsEnabled="False" />
+                        <pf:SideMenuItem Header="串口配置" Tag="SerialPortSettingView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="SerialPort" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="用户管理" Tag="UserManageView"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="AccountCog" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
+                        <pf:SideMenuItem Header="云同步" Tag="CloudSyncView" IsEnabled="False"
+                                         Padding="20,0,0,0"
+                                         FontSize="{DynamicResource FontSize.Body.Small}">
+                            <pf:SideMenuItem.Icon>
+                                <pf:PackIcon Kind="CloudSync" Width="14" Height="14" />
+                            </pf:SideMenuItem.Icon>
+                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
                 </pf:SideMenu>
             </Border>
@@ -139,8 +211,112 @@
                             prism:RegionManager.RegionName="{x:Static shell:RegionNames.Main}" />
         </Grid>
 
+        <!-- ══ 日志面板 ══ -->
+        <Border Grid.Row="1"
+                Visibility="{Binding IsLogPanelOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                BorderBrush="{DynamicResource PrimaryBrush}"
+                BorderThickness="0,1,0,0"
+                Background="{DynamicResource WindowBrush}">
+            <Grid Height="180">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="26" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 日志头部 -->
+                <Border Grid.Row="0" Background="{DynamicResource RegionBrush}" Padding="8,0">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <pf:PackIcon Kind="TextBoxOutline" Width="14" Height="14"
+                                         Foreground="{DynamicResource SecondaryTextBrush}"
+                                         VerticalAlignment="Center" />
+                            <TextBlock Text="系统日志" Margin="5,0,0,0" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Margin="10,0,0,0" FontSize="11"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       VerticalAlignment="Center">
+                                <Run Text="{Binding LogEntries.Count, Mode=OneWay}" />
+                                <Run Text=" 条" />
+                            </TextBlock>
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" Height="20" Padding="8,0"
+                                Content="清空" FontSize="10"
+                                Command="{Binding ClearLogCommand}"
+                                Background="Transparent"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                BorderThickness="1" />
+                    </Grid>
+                </Border>
+
+                <!-- 日志条目列表 -->
+                <ScrollViewer Grid.Row="1" x:Name="LogScrollViewer"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding LogEntries}"
+                                  x:Name="LogItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="72" />   <!-- 时间 -->
+                                        <ColumnDefinition Width="36" />   <!-- 级别 -->
+                                        <ColumnDefinition Width="*" />    <!-- 消息 -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}"
+                                               FontSize="10" FontFamily="Consolas"
+                                               Foreground="{DynamicResource SecondaryTextBrush}" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding LevelTag}"
+                                               FontSize="10" FontFamily="Consolas"
+                                               FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#4CAF50" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Level}" Value="Warn">
+                                                        <Setter Property="Foreground" Value="#FF9800" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                        <Setter Property="Foreground" Value="#F44336" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Column="2" FontSize="10"
+                                               TextWrapping="NoWrap"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource PrimaryTextBrush}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Level}" Value="Error">
+                                                        <Setter Property="Foreground" Value="#F44336" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Level}" Value="Warn">
+                                                        <Setter Property="Foreground" Value="#FF9800" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                        <Run Text="{Binding Source, StringFormat='[{0}] ', Mode=OneWay}" />
+                                        <Run Text="{Binding Message, Mode=OneWay}" />
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
         <!-- 状态栏 -->
-        <StatusBar Grid.Row="1" Background="{DynamicResource RegionBrush}">
+        <StatusBar Grid.Row="2" Background="{DynamicResource RegionBrush}">
             <StatusBarItem>
                 <StackPanel Orientation="Horizontal">
                     <Ellipse Width="8" Height="8" Margin="0,0,4,0"
@@ -158,7 +334,21 @@
             </StatusBarItem>
             <Separator />
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Text="{Binding SystemTime}" />
+                <StackPanel Orientation="Horizontal">
+                    <Button Height="22" Padding="8,0" Margin="0,0,8,0"
+                            FontSize="10" BorderThickness="1"
+                            Background="Transparent"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            Command="{Binding ToggleLogPanelCommand}"
+                            ToolTip="展开/收起日志面板">
+                        <StackPanel Orientation="Horizontal">
+                            <pf:PackIcon Kind="TextBoxOutline" Width="12" Height="12"
+                                         VerticalAlignment="Center" />
+                            <TextBlock Text=" 日志" FontSize="10" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="{Binding SystemTime}" VerticalAlignment="Center" />
+                </StackPanel>
             </StatusBarItem>
         </StatusBar>
     </Grid>

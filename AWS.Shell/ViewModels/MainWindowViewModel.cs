@@ -1,7 +1,9 @@
 using AWS.Core.Interfaces;
+using AWS.Core.Models;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
+using System.Collections.ObjectModel;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -12,6 +14,7 @@ public class MainWindowViewModel : BindableBase
     private readonly IUserService _userService;
     private readonly ISerialPortService _serialPortService;
     private readonly IRegionManager _regionManager;
+    private readonly ILogService _logService;
     private readonly DispatcherTimer _timer;
 
     private string _systemTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -51,18 +54,32 @@ public class MainWindowViewModel : BindableBase
         set => SetProperty(ref _selectedMenuItem, value);
     }
 
+    // ── 日志面板 ────────────────────────────────────────────
+    public ObservableCollection<LogEntry> LogEntries => _logService.Entries;
+
+    private bool _isLogPanelOpen = true;
+    public bool IsLogPanelOpen
+    {
+        get => _isLogPanelOpen;
+        set => SetProperty(ref _isLogPanelOpen, value);
+    }
+
     public DelegateCommand LoadedCommand { get; }
     public DelegateCommand ClosingCommand { get; }
     public DelegateCommand ToggleThemeCommand { get; }
     public DelegateCommand<object> NavigateCommand { get; }
+    public DelegateCommand ToggleLogPanelCommand { get; }
+    public DelegateCommand ClearLogCommand { get; }
 
     public MainWindowViewModel(IUserService userService,
         ISerialPortService serialPortService,
-        IRegionManager regionManager)
+        IRegionManager regionManager,
+        ILogService logService)
     {
         _userService = userService;
         _serialPortService = serialPortService;
         _regionManager = regionManager;
+        _logService = logService;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (_, _) =>
@@ -77,6 +94,8 @@ public class MainWindowViewModel : BindableBase
         ClosingCommand = new DelegateCommand(OnClosing);
         ToggleThemeCommand = new DelegateCommand(OnToggleTheme);
         NavigateCommand = new DelegateCommand<object>(OnNavigate);
+        ToggleLogPanelCommand = new DelegateCommand(() => IsLogPanelOpen = !IsLogPanelOpen);
+        ClearLogCommand = new DelegateCommand(_logService.Clear);
     }
 
     private void OnLoaded()

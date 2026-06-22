@@ -5,18 +5,18 @@
     xmlns:prism="http://prismlibrary.com/">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- 全局通用转换器 -->
+            <!--  全局通用转换器  -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
                     <ResourceDictionary.MergedDictionaries>
-                        <!-- slot[0]: 皮肤色彩，运行时可动态替换 -->
+                        <!--  slot[0]: 皮肤色彩，运行时可动态替换  -->
                         <ResourceDictionary Source="pack://application:,,,/PF.UI.Resources;component/Colors/Dark.xaml" />
                     </ResourceDictionary.MergedDictionaries>
                 </ResourceDictionary>
                 <ResourceDictionary>
                     <ResourceDictionary.MergedDictionaries>
-                        <!-- slot[1]: 控件主题 -->
+                        <!--  slot[1]: 控件主题  -->
                         <ResourceDictionary Source="pack://application:,,,/PF.UI.Resources;component/Themes/Default.xaml" />
                     </ResourceDictionary.MergedDictionaries>
                 </ResourceDictionary>

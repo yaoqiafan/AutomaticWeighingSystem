@@ -44,7 +44,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="260" />   <!-- 顶部三栏 -->
+            <RowDefinition Height="Auto" />   <!-- 顶部三栏 -->
             <RowDefinition Height="Auto" />  <!-- 等待区标题 -->
             <RowDefinition Height="*" />     <!-- 卡片区 -->
         </Grid.RowDefinitions>
@@ -54,11 +54,11 @@
              ════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="0" Margin="8,8,8,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="260" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="260" />
             </Grid.ColumnDefinitions>
 
             <!-- ① 实时重量 + 单价 -->
@@ -66,7 +66,7 @@
                     Background="{DynamicResource RegionBrush}"
                     CornerRadius="8" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="实时重量" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="实时重量" Style="{StaticResource SectionTitle}" FontSize="{DynamicResource FontSize.H1.Large}" />
 
                     <!-- 大重量数字 -->
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -119,7 +119,7 @@
                     <Separator Margin="0,10,0,8" />
 
                     <!-- 单价显示 / 快捷修改 -->
-                    <TextBlock Text="默认单价" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="默认单价" Style="{StaticResource FieldLabel}" FontSize="{DynamicResource FontSize.H1.Large}" />
                     <Grid>
                         <!-- 显示模式 -->
                         <StackPanel Orientation="Horizontal"
@@ -127,7 +127,7 @@
                                                  ConverterParameter=Invert}">
                             <TextBlock FontSize="16" FontWeight="Bold"
                                        Foreground="{DynamicResource PrimaryTextBrush}">
-                                <Run Text="{Binding CurrentPricePerKg, StringFormat='{}{0:F2}'}" />
+                                <Run Text="{Binding CurrentPricePerKg, StringFormat='{}{0:F2}', Mode=OneWay}" />
                                 <Run Text=" 元/kg" FontSize="11" />
                             </TextBlock>
                             <Button Margin="8,0,0,0" Height="22" Width="22"
@@ -189,7 +189,7 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="3"
-                               Text="来访建立档案" Style="{StaticResource SectionTitle}" />
+                               Text="来访建立档案" FontSize="{DynamicResource FontSize.H1.Large}" Style="{StaticResource SectionTitle}" />
 
                     <!-- 车牌号 + 客户名称 -->
                     <StackPanel Grid.Row="2" Grid.Column="0">
@@ -277,7 +277,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="今日收货统计"
+                    <TextBlock Grid.Row="0" Text="今日收货统计" FontSize="{DynamicResource FontSize.H1.Large}"
                                Style="{StaticResource SectionTitle}" />
 
                     <!-- LiveCharts 折线图 -->
