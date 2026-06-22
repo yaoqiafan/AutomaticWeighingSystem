@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common.props" />
+  <ItemGroup>
+    <PackageReference Include="NPOI" />
+    <PackageReference Include="System.IO.Ports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AWS.Data\AWS.Data.csproj" />
+    <ProjectReference Include="..\AWS.Core\AWS.Core.csproj" />
+  </ItemGroup>
+</Project>

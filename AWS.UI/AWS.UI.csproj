@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common.Desktop.props" />
+  <ItemGroup>
+    <PackageReference Include="PF.UI.Resources" />
+    <PackageReference Include="Prism.Wpf" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AWS.Services\AWS.Services.csproj" />
+    <ProjectReference Include="..\AWS.Core\AWS.Core.csproj" />
+  </ItemGroup>
+</Project>

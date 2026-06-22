@@ -1,3 +1,7 @@
 <Solution>
-  <Project Path="AutomaticWeighingSystem/AutomaticWeighingSystem.csproj" />
+  <Project Path="AWS.Shell/AWS.Shell.csproj" />
+  <Project Path="AWS.UI/AWS.UI.csproj" />
+  <Project Path="AWS.Core/AWS.Core.csproj" />
+  <Project Path="AWS.Data/AWS.Data.csproj" />
+  <Project Path="AWS.Services/AWS.Services.csproj" />
 </Solution>

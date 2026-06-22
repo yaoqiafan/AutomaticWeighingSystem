@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Common.Desktop.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PF.UI.Resources" />
+    <PackageReference Include="Prism.DryIoc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AWS.UI\AWS.UI.csproj" />
+    <ProjectReference Include="..\AWS.Services\AWS.Services.csproj" />
+    <ProjectReference Include="..\AWS.Core\AWS.Core.csproj" />
+    <ProjectReference Include="..\AWS.Data\AWS.Data.csproj" />
+  </ItemGroup>
+</Project>

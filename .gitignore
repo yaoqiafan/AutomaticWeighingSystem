@@ -1,0 +1,62 @@
+## .NET / MSBuild
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## Visual Studio
+.vs/
+*.rsuser
+*.vsp
+*.vspx
+*.sap
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+TestResult.xml
+
+## JetBrains Rider
+.idea/
+*.DotSettings.user
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+!**/packages/repositories.config
+
+## Build artifacts
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+
+## SQLite database files (runtime data)
+*.db
+*.db-shm
+*.db-wal
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Env / secrets
+.env
+.env.*
+appsettings.Development.json
