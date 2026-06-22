@@ -37,11 +37,12 @@
                        Color="{DynamicResource PrimaryBrush}" />
 
             <!-- 主题切换 -->
-            <Button Grid.Column="3" Width="36" Height="36"
+            <Button x:Name="ThemeBtn"
+                    Grid.Column="3" Width="36" Height="36"
                     Background="Transparent" BorderThickness="0"
                     ToolTip="切换深色/浅色主题"
-                    Command="{Binding ToggleThemeCommand}">
-                <pf:PackIcon Kind="WeatherNight" Width="18" Height="18"
+                    Click="ToggleThemeBtn_Click">
+                <pf:PackIcon x:Name="ThemeIcon" Kind="WeatherSunny" Width="18" Height="18"
                              Foreground="{DynamicResource PrimaryTextBrush}" />
             </Button>
 
@@ -76,7 +77,7 @@
                     BorderThickness="0,0,1,0">
                 <pf:SideMenu x:Name="SideNav"
                              Width="180" Margin="4"
-                             ExpandMode="ShowAll"
+                             ExpandMode="Freedom"
                              SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}">
                     <pf:Interaction.Triggers>
                         <pf:EventTrigger EventName="SelectionChanged">
@@ -98,50 +99,14 @@
                                 <pf:PackIcon Kind="MonitorDashboard" Width="14" Height="14" />
                             </pf:SideMenuItem.Icon>
                         </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="待处理队列" Tag="QueueView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="FormatListBulleted" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
-                    <!-- 数据查询 -->
-                    <pf:SideMenuItem Header="数据查询" Tag="ArchiveQueryView"
-                                     FontSize="{DynamicResource FontSize.Body.Standard}">
-                        <pf:SideMenuItem.Icon>
-                            <pf:PackIcon Kind="DatabaseSearch" Width="18" Height="18" />
-                        </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="存档查询" Tag="ArchiveQueryView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="FileSearch" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="数据导出" Tag="ExportView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="FileExport" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                    </pf:SideMenuItem>
-
-                    <!-- 统计分析 -->
-                    <pf:SideMenuItem Header="统计分析" Tag="StatisticsView"
+                    <!-- 数据统计（单页：图表 + 档案表 + 导出） -->
+                    <pf:SideMenuItem Header="数据统计" Tag="StatisticsView"
                                      FontSize="{DynamicResource FontSize.Body.Standard}">
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="ChartBar" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="数据统计" Tag="StatisticsView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="ChartLine" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
                     </pf:SideMenuItem>
 
                     <!-- 基础数据（Admin） -->
@@ -151,25 +116,11 @@
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="DatabaseEdit" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="客户管理" Tag="CustomerView"
+                        <pf:SideMenuItem Header="综合管理" Tag="BasicDataView"
                                          Padding="20,0,0,0"
                                          FontSize="{DynamicResource FontSize.Body.Small}">
                             <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="AccountGroup" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="货物种类" Tag="GoodsCategoryView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="PackageVariant" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="车辆管理" Tag="VehicleView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="Truck" Width="14" Height="14" />
+                                <pf:PackIcon Kind="ClipboardListOutline" Width="14" Height="14" />
                             </pf:SideMenuItem.Icon>
                         </pf:SideMenuItem>
                     </pf:SideMenuItem>
@@ -181,11 +132,11 @@
                         <pf:SideMenuItem.Icon>
                             <pf:PackIcon Kind="Cog" Width="18" Height="18" />
                         </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="串口配置" Tag="SerialPortSettingView"
+                        <pf:SideMenuItem Header="参数管理" Tag="ParameterManageView"
                                          Padding="20,0,0,0"
                                          FontSize="{DynamicResource FontSize.Body.Small}">
                             <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="SerialPort" Width="14" Height="14" />
+                                <pf:PackIcon Kind="Tune" Width="14" Height="14" />
                             </pf:SideMenuItem.Icon>
                         </pf:SideMenuItem>
                         <pf:SideMenuItem Header="用户管理" Tag="UserManageView"

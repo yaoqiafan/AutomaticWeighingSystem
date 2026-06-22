@@ -23,6 +23,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private readonly IUserService _userService;
     private readonly AwsDbContext _db;
     private readonly DispatcherTimer _statsTimer;
+    private readonly Dispatcher _dispatcher;
 
     // ── 实时重量 ──────────────────────────────────────────
     private double _currentWeight;
@@ -161,6 +162,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         _weighingService = weighingService;
         _userService = userService;
         _db = db;
+        _dispatcher = Application.Current.Dispatcher;
 
         HourlySeries =
         [
@@ -226,7 +228,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private async Task LoadInitialDataAsync()
     {
         var cats = await _db.GoodsCategories.Where(c => c.IsActive).ToListAsync();
-        Application.Current.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             GoodsCategories.Clear();
             foreach (var c in cats) GoodsCategories.Add(c);
@@ -242,7 +244,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     public async Task RefreshQueueAsync()
     {
         var items = await _weighingService.GetActiveQueueAsync();
-        Application.Current.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             QueueItems.Clear();
             foreach (var i in items) QueueItems.Add(i);
@@ -253,7 +255,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     {
         var hourly = await _weighingService.GetTodayHourlyNetWeightAsync();
         var (total, count) = await _weighingService.GetTodayStatsAsync();
-        Application.Current.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             for (int h = 0; h < 24; h++) _hourlyValues[h].Value = hourly[h];
             TodayTotalWeight = $"{total:N0} kg";
@@ -263,7 +265,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     private void OnWeightReceived(object? sender, Core.Models.WeightReading reading)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             CurrentWeight = reading.Value;
             IsStable = reading.IsStable;

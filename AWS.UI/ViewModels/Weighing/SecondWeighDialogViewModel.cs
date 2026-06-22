@@ -3,6 +3,7 @@ using AWS.Core.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace AWS.UI.ViewModels.Weighing;
 
@@ -10,6 +11,7 @@ public class SecondWeighDialogViewModel : BindableBase
 {
     private readonly ISerialPortService _serial;
     private readonly Func<long, double, double?, Task> _archiveFunc;
+    private readonly Dispatcher _dispatcher;
 
     public WeighingQueue QueueItem { get; }
 
@@ -87,6 +89,7 @@ public class SecondWeighDialogViewModel : BindableBase
         _serial = serial;
         _archiveFunc = archiveFunc;
         _priceText = defaultPrice.ToString("F2");
+        _dispatcher = Dispatcher.CurrentDispatcher;
 
         CaptureCommand = new DelegateCommand(
             () => CapturedSecondWeight = CurrentWeight,
@@ -101,7 +104,7 @@ public class SecondWeighDialogViewModel : BindableBase
 
     private void OnWeightReceived(object? sender, Core.Models.WeightReading reading)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             CurrentWeight = reading.Value;
             IsStable = reading.IsStable;

@@ -1,0 +1,198 @@
+<UserControl x:Class="AWS.UI.Views.Settings.ParameterManageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <UserControl.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="FieldInput" TargetType="FrameworkElement">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="ParamCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style x:Key="CardTitle" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+        </Style>
+        <Style x:Key="CardTitleText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.H2.Title}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource RegionBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,0,8">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <pf:PackIcon Kind="Tune" Width="18" Height="18"
+                                 Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="参数管理" Margin="6,0,0,0"
+                               FontSize="{DynamicResource FontSize.H2.Title}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                    <Button Content="重载" Width="72" Height="30" Margin="0,0,8,0"
+                            Command="{Binding ReloadCommand}"
+                            Background="Transparent" BorderThickness="1" />
+                    <Button Content="保存" Width="72" Height="30"
+                            Command="{Binding SaveCommand}"
+                            Background="#4CAF50" Foreground="White" BorderThickness="0" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 参数表单 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <!-- 业务参数 -->
+                    <Border Style="{StaticResource ParamCard}">
+                        <StackPanel>
+                            <StackPanel Style="{StaticResource CardTitle}">
+                                <pf:PackIcon Kind="Domain" Width="16" Height="16"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="业务参数" Margin="5,0,0,0" Style="{StaticResource CardTitleText}" />
+                            </StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="公司名称" Style="{StaticResource FieldLabel}" />
+                                <TextBox Grid.Column="1" Style="{StaticResource FieldInput}"
+                                         Text="{Binding CompanyName, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="6,0" VerticalContentAlignment="Center" />
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="默认单价" Style="{StaticResource FieldLabel}" />
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Style="{StaticResource FieldInput}"
+                                             Text="{Binding DefaultPricePerKg, UpdateSourceTrigger=PropertyChanged}"
+                                             Padding="6,0" VerticalContentAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text=" 元/kg" Margin="6,0,0,0"
+                                               Style="{StaticResource FieldLabel}" />
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 界面参数 -->
+                    <Border Style="{StaticResource ParamCard}">
+                        <StackPanel>
+                            <StackPanel Style="{StaticResource CardTitle}">
+                                <pf:PackIcon Kind="Palette" Width="16" Height="16"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="界面参数" Margin="5,0,0,0" Style="{StaticResource CardTitleText}" />
+                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="皮肤主题" Style="{StaticResource FieldLabel}" />
+                                <ComboBox Grid.Column="1" Style="{StaticResource FieldInput}"
+                                          ItemsSource="{Binding SkinOptions}"
+                                          DisplayMemberPath="Display"
+                                          SelectedValuePath="Value"
+                                          SelectedValue="{Binding SkinType}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <!-- 串口参数 -->
+                    <Border Style="{StaticResource ParamCard}">
+                        <StackPanel>
+                            <StackPanel Style="{StaticResource CardTitle}">
+                                <pf:PackIcon Kind="SerialPort" Width="16" Height="16"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="串口参数" Margin="5,0,0,0" Style="{StaticResource CardTitleText}" />
+                            </StackPanel>
+                            <CheckBox Content="启用串口（关闭则使用模拟数据）" Margin="0,0,0,8"
+                                      IsChecked="{Binding SerialPortEnabled}"
+                                      FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="串口名称" Style="{StaticResource FieldLabel}" />
+                                <TextBox Grid.Column="1" Style="{StaticResource FieldInput}"
+                                         Text="{Binding SerialPortName, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="6,0" VerticalContentAlignment="Center" />
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="波特率" Style="{StaticResource FieldLabel}" />
+                                <ComboBox Grid.Column="1" Style="{StaticResource FieldInput}"
+                                          ItemsSource="{Binding BaudRateOptions}"
+                                          SelectedItem="{Binding BaudRate}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 云同步参数 -->
+                    <Border Style="{StaticResource ParamCard}">
+                        <StackPanel>
+                            <StackPanel Style="{StaticResource CardTitle}">
+                                <pf:PackIcon Kind="CloudSync" Width="16" Height="16"
+                                             Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="云同步参数" Margin="5,0,0,0" Style="{StaticResource CardTitleText}" />
+                            </StackPanel>
+                            <CheckBox Content="启用云同步" Margin="0,0,0,8"
+                                      IsChecked="{Binding CloudSyncEnabled}"
+                                      FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="同步地址" Style="{StaticResource FieldLabel}" />
+                                <TextBox Grid.Column="1" Style="{StaticResource FieldInput}"
+                                         Text="{Binding CloudSyncUrl, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="6,0" VerticalContentAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

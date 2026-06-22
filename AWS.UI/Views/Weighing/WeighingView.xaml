@@ -66,7 +66,16 @@
                     Background="{DynamicResource RegionBrush}"
                     CornerRadius="8" Padding="12">
                 <StackPanel>
-                    <TextBlock Text="实时重量" Style="{StaticResource SectionTitle}" FontSize="{DynamicResource FontSize.H1.Large}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <pf:PackIcon Kind="Gauge" Width="16" Height="16"
+                                     Foreground="{DynamicResource PrimaryBrush}"
+                                     VerticalAlignment="Center" />
+                        <TextBlock Text="实时重量" Margin="5,0,0,0"
+                                   FontSize="{DynamicResource FontSize.H1.Large}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
 
                     <!-- 大重量数字 -->
                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
@@ -122,20 +131,29 @@
                     <TextBlock Text="默认单价" Style="{StaticResource FieldLabel}" FontSize="{DynamicResource FontSize.H1.Large}" />
                     <Grid>
                         <!-- 显示模式 -->
-                        <StackPanel Orientation="Horizontal"
-                                    Visibility="{Binding IsPriceEditing, Converter={StaticResource BoolVis},
-                                                 ConverterParameter=Invert}">
-                            <TextBlock FontSize="16" FontWeight="Bold"
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPriceEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <TextBlock FontSize="{DynamicResource FontSize.H2.Title}"  FontWeight="Bold"
                                        Foreground="{DynamicResource PrimaryTextBrush}">
+                                 <Run Text="    " FontSize="{DynamicResource FontSize.H2.Title}" />
                                 <Run Text="{Binding CurrentPricePerKg, StringFormat='{}{0:F2}', Mode=OneWay}" />
-                                <Run Text=" 元/kg" FontSize="11" />
+                                <Run Text=" 元/kg" FontSize="{DynamicResource FontSize.H2.Title}" />
                             </TextBlock>
-                            <Button Margin="8,0,0,0" Height="22" Width="22"
+                            <Button Margin="8,0,0,0" 
                                     Background="Transparent" BorderThickness="0"
                                     Command="{Binding StartPriceEditCommand}"
                                     Visibility="{Binding IsAdmin, Converter={StaticResource BoolVis}}"
                                     ToolTip="修改默认单价">
-                                <pf:PackIcon Kind="Pencil" Width="12" Height="12"
+                                <pf:PackIcon Kind="Pencil" Width="16" Height="16"
                                              Foreground="{DynamicResource SecondaryTextBrush}" />
                             </Button>
                         </StackPanel>
@@ -153,13 +171,13 @@
                                 </Style>
                             </StackPanel.Style>
                             <TextBox Text="{Binding PriceEditText, UpdateSourceTrigger=PropertyChanged}"
-                                     Width="80" Height="26" Padding="4,0"
-                                     VerticalContentAlignment="Center" FontSize="13" />
-                            <Button Content="✓" Width="26" Height="26" Margin="4,0,2,0"
-                                    Background="#4CAF50" Foreground="White" BorderThickness="0"
+                                     Width="80"   
+                                     VerticalContentAlignment="Center" FontSize="{DynamicResource FontSize.Body.Standard}" />
+                            <Button Content="✓"    Margin="4,0,2,0"
+                                      Foreground="White" BorderThickness="0"
                                     Command="{Binding SavePriceCommand}" />
-                            <Button Content="✕" Width="26" Height="26"
-                                    Background="#F44336" Foreground="White" BorderThickness="0"
+                            <Button Content="✕"  
+                                      Foreground="White" BorderThickness="0"
                                     Command="{Binding CancelPriceEditCommand}" />
                         </StackPanel>
                     </Grid>
@@ -188,8 +206,17 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.ColumnSpan="3"
-                               Text="来访建立档案" FontSize="{DynamicResource FontSize.H1.Large}" Style="{StaticResource SectionTitle}" />
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3"
+                                Orientation="Horizontal" Margin="0,0,0,8">
+                        <pf:PackIcon Kind="ClipboardPlusOutline" Width="16" Height="16"
+                                     Foreground="{DynamicResource PrimaryBrush}"
+                                     VerticalAlignment="Center" />
+                        <TextBlock Text="来访建立档案" Margin="5,0,0,0"
+                                   FontSize="{DynamicResource FontSize.H1.Large}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
 
                     <!-- 车牌号 + 客户名称 -->
                     <StackPanel Grid.Row="2" Grid.Column="0">
@@ -277,8 +304,16 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="今日收货统计" FontSize="{DynamicResource FontSize.H1.Large}"
-                               Style="{StaticResource SectionTitle}" />
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                        <pf:PackIcon Kind="ChartBoxOutline" Width="16" Height="16"
+                                     Foreground="{DynamicResource PrimaryBrush}"
+                                     VerticalAlignment="Center" />
+                        <TextBlock Text="今日收货统计" Margin="5,0,0,0"
+                                   FontSize="{DynamicResource FontSize.H1.Large}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
 
                     <!-- LiveCharts 折线图 -->
                     <lvc:CartesianChart Grid.Row="1"
@@ -330,7 +365,7 @@
                              Foreground="{DynamicResource PrimaryBrush}"
                              VerticalAlignment="Center" />
                 <TextBlock Text="卸货等待区" Margin="6,0,0,0"
-                           FontSize="13" FontWeight="SemiBold"
+                           FontSize="{DynamicResource FontSize.H2.Title}" FontWeight="SemiBold"
                            Foreground="{DynamicResource PrimaryBrush}"
                            VerticalAlignment="Center" />
                 <TextBlock Margin="8,0,0,0"
@@ -391,7 +426,7 @@
 
                                     <!-- 车牌 -->
                                     <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                        <pf:PackIcon Kind="Car" Width="12" Height="12"
+                                        <pf:PackIcon Kind="Car" Width="16" Height="16"
                                                      Foreground="{DynamicResource SecondaryTextBrush}"
                                                      VerticalAlignment="Center" />
                                         <TextBlock Margin="4,0,0,0" FontSize="11"
@@ -411,7 +446,7 @@
 
                                     <!-- 货物 -->
                                     <StackPanel Grid.Row="4" Orientation="Horizontal">
-                                        <pf:PackIcon Kind="Package" Width="12" Height="12"
+                                        <pf:PackIcon Kind="Package" Width="16" Height="16"
                                                      Foreground="{DynamicResource SecondaryTextBrush}"
                                                      VerticalAlignment="Center" />
                                         <TextBlock Margin="4,0,0,0" FontSize="11"

@@ -5,6 +5,7 @@ using AWS.Services;
 using AWS.Shell.Views;
 using AWS.UI;
 using Microsoft.EntityFrameworkCore;
+using PF.UI.Shared.Data;
 using Prism.DryIoc;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -23,6 +24,66 @@ public partial class App : PrismApplication
 
     // TODO: 打包前将 DevAutoLogin 改为 false
     private const bool DevAutoLogin = true;
+
+    #region 程序启动与自检
+
+    private static readonly string MutexName =
+        "Global\\LxAwsWeighingSystem-7E4F2A1B-C3D9-4E8F-A012-B56789CDEF01";
+    private static Mutex? _appMutex;
+    private static bool _isNewInstance;
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        if (RunningInstance())
+        {
+            base.OnStartup(e);
+            DispatcherUnhandledException += OnDispatcherUnhandledException;
+        }
+        else
+        {
+            MessageBox.Show("程序已在运行中！", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            Shutdown();
+        }
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        base.OnExit(e);
+        if (_isNewInstance)
+        {
+            _appMutex?.ReleaseMutex();
+            _appMutex?.Dispose();
+        }
+    }
+
+    private static bool RunningInstance()
+    {
+        try
+        {
+            _appMutex = new Mutex(true, MutexName, out _isNewInstance);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // 无权限访问全局互斥体（非管理员），降级为本地互斥体
+            _appMutex = new Mutex(true, MutexName.Replace("Global\\", ""), out _isNewInstance);
+        }
+        return _isNewInstance;
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        var ex = e.Exception;
+        var str = $"出现未处理异常\n异常类型：{ex.GetType().Name}\n异常消息：{ex.Message}\n堆栈信息：{ex.StackTrace}";
+
+        try { Container.Resolve<ILogService>().Error(str, "App"); } catch { }
+
+        MessageBox.Show(str, "系统错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true;
+    }
+
+    #endregion
+
+    #region Prism 框架核心
 
     protected override Window CreateShell()
     {
@@ -55,23 +116,6 @@ public partial class App : PrismApplication
         InitializeSerialPort();
         Container.Resolve<IRegionManager>()
             .RequestNavigate(RegionNames.Main, nameof(AWS.UI.Views.Weighing.WeighingView));
-    }
-
-    private void InitializeSerialPort()
-    {
-        var db = Container.Resolve<AwsDbContext>();
-        var serial = Container.Resolve<ISerialPortService>();
-        var enabled = db.SystemSettings.Find(SettingKeys.SerialPortEnabled)?.Value == "true";
-        if (!enabled)
-        {
-            serial.StartSimulation();
-            return;
-        }
-        var portName = db.SystemSettings.Find(SettingKeys.SerialPortName)?.Value ?? "COM1";
-        var baudStr = db.SystemSettings.Find(SettingKeys.BaudRate)?.Value ?? "9600";
-        int baud = int.TryParse(baudStr, out int b) ? b : 9600;
-        try { serial.Connect(portName, baud); }
-        catch { /* 串口连接失败，界面状态栏会提示 */ }
     }
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -107,49 +151,57 @@ public partial class App : PrismApplication
 
     private void EnsureDatabase(IContainerRegistry containerRegistry)
     {
-        var container = containerRegistry.GetContainer();
-        var db = container.Resolve<AwsDbContext>();
+        var db = containerRegistry.GetContainer().Resolve<AwsDbContext>();
         db.Database.EnsureCreated();
     }
+
+    private void InitializeSerialPort()
+    {
+        var db = Container.Resolve<AwsDbContext>();
+        var serial = Container.Resolve<ISerialPortService>();
+        var enabled = db.SystemSettings.Find(SettingKeys.SerialPortEnabled)?.Value == "true";
+        if (!enabled)
+        {
+            serial.StartSimulation();
+            return;
+        }
+        var portName = db.SystemSettings.Find(SettingKeys.SerialPortName)?.Value ?? "COM1";
+        var baudStr = db.SystemSettings.Find(SettingKeys.BaudRate)?.Value ?? "9600";
+        int baud = int.TryParse(baudStr, out int b) ? b : 9600;
+        try { serial.Connect(portName, baud); }
+        catch { /* 串口连接失败，界面状态栏会提示 */ }
+    }
+
+    #endregion
+
+    #region 界面资源
 
     private void ApplySkin()
     {
         var db = Container.Resolve<AwsDbContext>();
-        var skin = db.SystemSettings.Find(SettingKeys.SkinType)?.Value ?? "Dark";
+        var skinStr = db.SystemSettings.Find(SettingKeys.SkinType)?.Value ?? nameof(SkinType.Dark);
+        var skin = Enum.TryParse<SkinType>(skinStr, out var s) ? s : SkinType.Dark;
         UpdateSkin(skin);
     }
 
-    internal void UpdateSkin(string skinName)
+    internal void UpdateSkin(SkinType skin = SkinType.Dark)
     {
-        var validSkin = skinName == "Light" ? "Light" : "Dark";
-
         var skins0 = Resources.MergedDictionaries[0];
         skins0.MergedDictionaries.Clear();
-        skins0.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+        skins0.MergedDictionaries.Add(new ResourceDictionary
         {
-            Source = new Uri($"pack://application:,,,/PF.UI.Resources;component/Colors/{validSkin}.xaml")
+            Source = new Uri($"pack://application:,,,/PF.UI.Resources;component/Colors/{skin}.xaml")
         });
 
         var skins1 = Resources.MergedDictionaries[1];
         skins1.MergedDictionaries.Clear();
-        skins1.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+        skins1.MergedDictionaries.Add(new ResourceDictionary
         {
             Source = new Uri("pack://application:,,,/PF.UI.Resources;component/Themes/Default.xaml")
         });
     }
 
-    protected override void OnStartup(StartupEventArgs e)
-    {
-        base.OnStartup(e);
-        DispatcherUnhandledException += OnDispatcherUnhandledException;
-    }
-
-    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-    {
-        MessageBox.Show($"发生未处理错误：{e.Exception.Message}", "系统错误",
-            MessageBoxButton.OK, MessageBoxImage.Error);
-        e.Handled = true;
-    }
+    #endregion
 }
 
 public static class RegionNames

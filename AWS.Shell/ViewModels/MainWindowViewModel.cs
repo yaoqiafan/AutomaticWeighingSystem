@@ -1,5 +1,7 @@
 using AWS.Core.Interfaces;
 using AWS.Core.Models;
+using PF.UI.Controls;
+using PF.UI.Shared.Data;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -16,6 +18,7 @@ public class MainWindowViewModel : BindableBase
     private readonly IRegionManager _regionManager;
     private readonly ILogService _logService;
     private readonly DispatcherTimer _timer;
+    private readonly Dispatcher _dispatcher;
 
     private string _systemTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     public string SystemTime
@@ -80,6 +83,7 @@ public class MainWindowViewModel : BindableBase
         _serialPortService = serialPortService;
         _regionManager = regionManager;
         _logService = logService;
+        _dispatcher = System.Windows.Application.Current.Dispatcher;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (_, _) =>
@@ -88,7 +92,7 @@ public class MainWindowViewModel : BindableBase
             UpdateSerialPortStatus();
         };
 
-        _serialPortService.WeightReceived += (_, _) => UpdateSerialPortStatus();
+        _serialPortService.WeightReceived += (_, _) => _dispatcher.BeginInvoke((Action)UpdateSerialPortStatus);
 
         LoadedCommand = new DelegateCommand(OnLoaded);
         ClosingCommand = new DelegateCommand(OnClosing);
@@ -115,10 +119,10 @@ public class MainWindowViewModel : BindableBase
     {
         if (System.Windows.Application.Current is App app)
         {
-            // 读当前皮肤，切换到另一种
-            var current = app.Resources.MergedDictionaries[0]
-                .MergedDictionaries.FirstOrDefault()?.Source?.ToString() ?? "";
-            var newSkin = current.Contains("Dark") ? "Light" : "Dark";
+            var source = app.Resources.MergedDictionaries[0]
+                .MergedDictionaries.FirstOrDefault()?.Source?.ToString() ?? string.Empty;
+            var newSkin = source.Contains(nameof(SkinType.Dark), StringComparison.OrdinalIgnoreCase)
+                ? SkinType.Default : SkinType.Dark;
             app.UpdateSkin(newSkin);
         }
     }
@@ -126,12 +130,9 @@ public class MainWindowViewModel : BindableBase
     private void OnNavigate(object args)
     {
         string? target = null;
-        if (args is System.Windows.Controls.SelectionChangedEventArgs e
-            && e.AddedItems.Count > 0
-            && e.AddedItems[0] is PF.UI.Controls.SideMenuItem item)
-        {
+        if (args is FunctionEventArgs<object> fe && fe.Info is SideMenuItem item)
             target = item.Tag as string;
-        }
+
         if (!string.IsNullOrEmpty(target))
             _regionManager.RequestNavigate(RegionNames.Main, target);
     }

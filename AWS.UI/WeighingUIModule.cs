@@ -1,10 +1,8 @@
 using AWS.UI.Views.BasicData;
-using AWS.UI.Views.Records;
 using AWS.UI.Views.Settings;
 using AWS.UI.Views.Statistics;
 using AWS.UI.Views.Weighing;
 using AWS.UI.ViewModels.BasicData;
-using AWS.UI.ViewModels.Records;
 using AWS.UI.ViewModels.Settings;
 using AWS.UI.ViewModels.Statistics;
 using AWS.UI.ViewModels.Weighing;
@@ -17,15 +15,17 @@ public class WeighingUIModule : IModule
 {
     public void RegisterTypes(IContainerRegistry containerRegistry)
     {
+        // 过磅操作
         containerRegistry.RegisterForNavigation<WeighingView, WeighingViewModel>(nameof(WeighingView));
-        containerRegistry.RegisterForNavigation<QueueView, QueueViewModel>(nameof(QueueView));
-        containerRegistry.RegisterForNavigation<ArchiveQueryView, ArchiveQueryViewModel>(nameof(ArchiveQueryView));
-        containerRegistry.RegisterForNavigation<ExportView, ExportViewModel>(nameof(ExportView));
+
+        // 数据统计（单页：图表 + 档案表 + 导出）
         containerRegistry.RegisterForNavigation<StatisticsView, StatisticsViewModel>(nameof(StatisticsView));
-        containerRegistry.RegisterForNavigation<CustomerView, CustomerViewModel>(nameof(CustomerView));
-        containerRegistry.RegisterForNavigation<GoodsCategoryView, GoodsCategoryViewModel>(nameof(GoodsCategoryView));
-        containerRegistry.RegisterForNavigation<VehicleView, VehicleViewModel>(nameof(VehicleView));
-        containerRegistry.RegisterForNavigation<SerialPortSettingView, SerialPortSettingViewModel>(nameof(SerialPortSettingView));
+
+        // 基础数据综合管理
+        containerRegistry.RegisterForNavigation<BasicDataView, BasicDataViewModel>(nameof(BasicDataView));
+
+        // 系统设置
+        containerRegistry.RegisterForNavigation<ParameterManageView, ParameterManageViewModel>(nameof(ParameterManageView));
         containerRegistry.RegisterForNavigation<UserManageView, UserManageViewModel>(nameof(UserManageView));
         containerRegistry.RegisterForNavigation<CloudSyncView, CloudSyncViewModel>(nameof(CloudSyncView));
     }
