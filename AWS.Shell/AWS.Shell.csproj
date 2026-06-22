@@ -2,7 +2,11 @@
   <Import Project="..\Common.Desktop.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <ApplicationIcon>recycle.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="recycle.ico" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="PF.UI.Resources" />
     <PackageReference Include="Prism.DryIoc" />

@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common.Desktop.props" />
   <ItemGroup>
+    <None Remove="Images\recycle.png" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="PF.UI.Resources" />
     <PackageReference Include="Prism.Wpf" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" />
@@ -8,5 +11,8 @@
   <ItemGroup>
     <ProjectReference Include="..\AWS.Services\AWS.Services.csproj" />
     <ProjectReference Include="..\AWS.Core\AWS.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\recycle.png" />
   </ItemGroup>
 </Project>

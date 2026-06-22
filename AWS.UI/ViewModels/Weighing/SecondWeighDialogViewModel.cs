@@ -145,6 +145,7 @@ public class SecondWeighDialogViewModel : BindableBase
         }
         catch (Exception ex)
         {
+            string str = ex.ToString();
             _log.Error($"存档失败：{ex.Message}", "二次称重");
         }
     }

@@ -314,6 +314,9 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
         try
         {
+            var logCategory = _selectedCategory.Name;
+            var logWeight = _capturedWeight.Value;
+
             await _weighingService.CreateInitialEntryAsync(
                 vehiclePlate: VehiclePlate,
                 customerName: CustomerName,
@@ -333,7 +336,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
             CapturedWeight = null;
 
             await RefreshQueueAsync();
-            _log.Info($"入场登记成功：{_selectedCategory?.Name ?? "-"} {_capturedWeight:F1}kg", "过磅");
+            _log.Info($"入场登记成功：{logCategory} {logWeight:F1}kg", "过磅");
         }
         catch (Exception ex)
         {

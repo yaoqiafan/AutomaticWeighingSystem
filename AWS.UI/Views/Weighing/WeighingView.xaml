@@ -47,609 +47,630 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <!--
+        ════════════════════════════════════════════════════════
+        两行两列主布局
+        左上：实时重量   右上：今日收货统计
+        左下：来访建档   右下：卸货等待区
+        ════════════════════════════════════════════════════════
+    -->
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="8" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <!--  顶部三栏  -->
-            <RowDefinition Height="Auto" />
-            <!--  等待区标题  -->
+            <RowDefinition Height="280" />
+            <RowDefinition Height="8" />
             <RowDefinition Height="*" />
-            <!--  卡片区  -->
         </Grid.RowDefinitions>
 
         <!--
-            ════════════════════════════════════════════════════════
-            顶部三栏
-            ════════════════════════════════════════════════════════
-        -->
-        <Grid Grid.Row="0" Margin="8,8,8,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="8" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!--  ① 实时重量 + 单价  -->
-            <Border
-                Grid.Column="0"
-                Padding="12"
-                Background="{DynamicResource RegionBrush}"
-                CornerRadius="8">
-                <StackPanel>
-                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
-                        <pf:PackIcon
-                            Width="16"
-                            Height="16"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Kind="Gauge" />
-                        <TextBlock
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="{DynamicResource FontSize.H1.Large}"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Text="实时重量" />
-                    </StackPanel>
-
-                    <!--  大重量数字  -->
-                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                        <TextBlock
-                            FontSize="42"
-                            FontWeight="Bold"
-                            Foreground="{DynamicResource PrimaryTextBrush}"
-                            Text="{Binding CurrentWeight, StringFormat='{}{0:F1}'}" />
-                        <TextBlock
-                            Margin="4,0,0,6"
-                            VerticalAlignment="Bottom"
-                            FontSize="18"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="kg" />
-                    </StackPanel>
-
-                    <!--  稳定状态  -->
-                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
-                        <Ellipse
-                            Width="10"
-                            Height="10"
-                            Margin="0,0,6,0">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="#FF5722" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStable}" Value="True">
-                                            <Setter Property="Fill" Value="#4CAF50" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <TextBlock FontSize="12">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="不 稳 定" />
-                                    <Setter Property="Foreground" Value="#FF5722" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsStable}" Value="True">
-                                            <Setter Property="Text" Value="稳  定" />
-                                            <Setter Property="Foreground" Value="#4CAF50" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-
-                        <!--  模拟模式标记  -->
-                        <Border
-                            Margin="8,0,0,0"
-                            Padding="5,1"
-                            Background="#FF9800"
-                            CornerRadius="3"
-                            Visibility="{Binding IsSimulationMode, Converter={StaticResource BoolVis}}">
-                            <TextBlock
-                                FontSize="10"
-                                FontWeight="Bold"
-                                Foreground="White"
-                                Text="模拟" />
-                        </Border>
-                    </StackPanel>
-
-                    <Separator Margin="0,10,0,8" />
-
-                    <!--  单价显示 / 快捷修改  -->
-                    <TextBlock
-                        FontSize="{DynamicResource FontSize.H1.Large}"
-                        Style="{StaticResource FieldLabel}"
-                        Text="默认单价" />
-                    <Grid>
-                        <!--  显示模式  -->
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPriceEditing}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBlock
-                                FontSize="{DynamicResource FontSize.H2.Title}"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryTextBrush}">
-                                <Run FontSize="{DynamicResource FontSize.H2.Title}" Text="    " />
-                                <Run Text="{Binding CurrentPricePerKg, StringFormat='{}{0:F2}', Mode=OneWay}" />
-                                <Run FontSize="{DynamicResource FontSize.H2.Title}" Text=" 元/kg" />
-                            </TextBlock>
-                            <Button
-                                Margin="8,0,0,0"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Command="{Binding StartPriceEditCommand}"
-                                ToolTip="修改默认单价"
-                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolVis}}">
-                                <pf:PackIcon
-                                    Width="16"
-                                    Height="16"
-                                    Foreground="{DynamicResource SecondaryTextBrush}"
-                                    Kind="Pencil" />
-                            </Button>
-                        </StackPanel>
-
-                        <!--  编辑模式  -->
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Style>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPriceEditing}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                            <TextBox
-                                Width="80"
-                                VerticalContentAlignment="Center"
-                                FontSize="{DynamicResource FontSize.Body.Standard}"
-                                Text="{Binding PriceEditText, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button
-                                Margin="4,0,2,0"
-                                BorderThickness="0"
-                                Command="{Binding SavePriceCommand}"
-                                Content="✓"
-                                Foreground="White" />
-                            <Button
-                                BorderThickness="0"
-                                Command="{Binding CancelPriceEditCommand}"
-                                Content="✕"
-                                Foreground="White" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!--  ② 来访建立档案  -->
-            <Border
-                Grid.Column="2"
-                Padding="16,12"
-                Background="{DynamicResource RegionBrush}"
-                CornerRadius="8">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel
-                        Grid.Row="0"
-                        Grid.ColumnSpan="3"
-                        Margin="0,0,0,8"
-                        Orientation="Horizontal">
-                        <pf:PackIcon
-                            Width="16"
-                            Height="16"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Kind="ClipboardPlusOutline" />
-                        <TextBlock
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="{DynamicResource FontSize.H1.Large}"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Text="来访建立档案" />
-                    </StackPanel>
-
-                    <!--  车牌号 + 客户名称  -->
-                    <StackPanel Grid.Row="2" Grid.Column="0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="车牌号（可空）" />
-                        <TextBox
-                            Height="30"
-                            Padding="8,0"
-                            VerticalContentAlignment="Center"
-                            FontSize="13"
-                            Text="{Binding VehiclePlate, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.Column="2">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="客户名称（可选）" />
-                        <TextBox
-                            Height="30"
-                            Padding="8,0"
-                            VerticalContentAlignment="Center"
-                            FontSize="13"
-                            Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-
-                    <!--  货物类别 + 备注  -->
-                    <StackPanel Grid.Row="4" Grid.Column="0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="货物类别 *" />
-                        <ComboBox
-                            Height="30"
-                            DisplayMemberPath="Name"
-                            FontSize="13"
-                            ItemsSource="{Binding GoodsCategories}"
-                            SelectedItem="{Binding SelectedCategory}" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="4" Grid.Column="2">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="备注（可选）" />
-                        <TextBox
-                            Height="30"
-                            Padding="8,0"
-                            VerticalContentAlignment="Center"
-                            FontSize="13"
-                            Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-
-                    <!--  采集重量区  -->
-                    <Grid Grid.Row="6" Grid.ColumnSpan="3">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <!--  已采集重量显示  -->
-                        <Border
-                            Grid.Column="0"
-                            Height="36"
-                            Padding="10,0"
-                            Background="{DynamicResource WindowBrush}"
-                            CornerRadius="4">
-                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock
-                                    FontSize="12"
-                                    Foreground="{DynamicResource SecondaryTextBrush}"
-                                    Text="采集重量：" />
-                                <TextBlock
-                                    FontSize="14"
-                                    FontWeight="Bold"
-                                    Foreground="{DynamicResource PrimaryTextBrush}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Text" Value="— 请采集 —" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasCapturedWeight}" Value="True">
-                                                    <Setter Property="Text" Value="{Binding CapturedWeight, StringFormat='{}{0:F1} kg'}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
-
-                        <Button
-                            Grid.Column="2"
-                            Width="110"
-                            Height="36"
-                            Command="{Binding CaptureWeightCommand}"
-                            Content="采 集 重 量"
-                            FontSize="13" />
-                    </Grid>
-
-                    <!--  确认入场  -->
-                    <Button
-                        Grid.Row="8"
-                        Grid.ColumnSpan="3"
-                        Height="40"
-                        Background="#1976D2"
-                        BorderThickness="0"
-                        Command="{Binding ConfirmEntryCommand}"
-                        Content="确  认  入  场"
-                        FontSize="14"
-                        FontWeight="SemiBold"
-                        Foreground="White" />
-                </Grid>
-            </Border>
-
-            <!--  ④ 今日收货统计  -->
-            <Border
-                Grid.Column="4"
-                Padding="12"
-                Background="{DynamicResource RegionBrush}"
-                CornerRadius="8">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel
-                        Grid.Row="0"
-                        Margin="0,0,0,8"
-                        Orientation="Horizontal">
-                        <pf:PackIcon
-                            Width="16"
-                            Height="16"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Kind="ChartBoxOutline" />
-                        <TextBlock
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="{DynamicResource FontSize.H1.Large}"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Text="今日收货统计" />
-                    </StackPanel>
-
-                    <!--  LiveCharts 折线图  -->
-                    <lvc:CartesianChart
-                        Grid.Row="1"
-                        Series="{Binding HourlySeries}"
-                        XAxes="{Binding XAxes}"
-                        YAxes="{Binding YAxes}"
-                        TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
-                        LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}" />
-
-                    <!--  汇总数字  -->
-                    <Grid Grid.Row="2" Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
-                                Text="合计净重" />
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryTextBrush}"
-                                Text="{Binding TodayTotalWeight}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
-                                Text="今日车次" />
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryTextBrush}">
-                                <Run Text="{Binding TodayVehicleCount, Mode=OneWay}" />
-                                <Run Text=" 次" />
-                            </TextBlock>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <!--
-            ════════════════════════════════════════════════════════
-            等待区标题栏
-            ════════════════════════════════════════════════════════
+            ════════════════════════════════════════════════════
+            左上：实时重量 + 单价
+            ════════════════════════════════════════════════════
         -->
         <Border
-            Grid.Row="1"
-            Margin="8,8,8,0"
-            Padding="14,6"
+            Grid.Row="0"
+            Grid.Column="0"
+            Padding="12"
             Background="{DynamicResource RegionBrush}"
-            CornerRadius="6,6,0,0">
-            <StackPanel Orientation="Horizontal">
-                <pf:PackIcon
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource PrimaryBrush}"
-                    Kind="TruckDelivery" />
+            CornerRadius="8">
+            <StackPanel>
+                <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                    <pf:PackIcon
+                        Width="16"
+                        Height="16"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="Gauge" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="{DynamicResource FontSize.H1.Large}"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Text="实时重量" />
+                </StackPanel>
+
+                <!--  大重量数字  -->
+                <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                    <TextBlock
+                        FontSize="48"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Text="{Binding CurrentWeight, StringFormat='{}{0:F1}'}" />
+                    <TextBlock
+                        Margin="4,0,0,8"
+                        VerticalAlignment="Bottom"
+                        FontSize="20"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="kg" />
+                </StackPanel>
+
+                <!--  稳定状态  -->
+                <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                    <Ellipse
+                        Width="10"
+                        Height="10"
+                        Margin="0,0,6,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#FF5722" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsStable}" Value="True">
+                                        <Setter Property="Fill" Value="#4CAF50" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock FontSize="12">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="不 稳 定" />
+                                <Setter Property="Foreground" Value="#FF5722" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsStable}" Value="True">
+                                        <Setter Property="Text" Value="稳  定" />
+                                        <Setter Property="Foreground" Value="#4CAF50" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!--  模拟模式标记  -->
+                    <Border
+                        Margin="8,0,0,0"
+                        Padding="5,1"
+                        Background="#FF9800"
+                        CornerRadius="3"
+                        Visibility="{Binding IsSimulationMode, Converter={StaticResource BoolVis}}">
+                        <TextBlock
+                            FontSize="10"
+                            FontWeight="Bold"
+                            Foreground="White"
+                            Text="模拟" />
+                    </Border>
+                </StackPanel>
+
+                <Separator Margin="0,10,0,8" />
+
+                <!--  单价显示 / 快捷修改  -->
                 <TextBlock
-                    Margin="6,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="{DynamicResource FontSize.H2.Title}"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource PrimaryBrush}"
-                    Text="卸货等待区" />
-                <TextBlock
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="11"
-                    Foreground="{DynamicResource SecondaryTextBrush}">
-                    <Run Text="共 " />
-                    <Run Text="{Binding QueueItems.Count, Mode=OneWay}" />
-                    <Run Text=" 辆待处理  — 点击卡片进行二次称重" />
-                </TextBlock>
+                    FontSize="{DynamicResource FontSize.H1.Large}"
+                    Style="{StaticResource FieldLabel}"
+                    Text="默认单价" />
+                <Grid>
+                    <!--  显示模式  -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPriceEditing}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock
+                            FontSize="{DynamicResource FontSize.H2.Title}"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource PrimaryTextBrush}">
+                            <Run FontSize="{DynamicResource FontSize.H2.Title}" Text="    " />
+                            <Run Text="{Binding CurrentPricePerKg, StringFormat='{}{0:F2}', Mode=OneWay}" />
+                            <Run FontSize="{DynamicResource FontSize.H2.Title}" Text=" 元/kg" />
+                        </TextBlock>
+                        <Button
+                            Margin="8,0,0,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding StartPriceEditCommand}"
+                            ToolTip="修改默认单价"
+                            Visibility="{Binding IsAdmin, Converter={StaticResource BoolVis}}">
+                            <pf:PackIcon
+                                Width="16"
+                                Height="16"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Kind="Pencil" />
+                        </Button>
+                    </StackPanel>
+
+                    <!--  编辑模式  -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPriceEditing}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBox
+                            Width="80"
+                            VerticalContentAlignment="Center"
+                            FontSize="{DynamicResource FontSize.Body.Standard}"
+                            Text="{Binding PriceEditText, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button
+                            Margin="4,0,2,0"
+                            BorderThickness="0"
+                            Command="{Binding SavePriceCommand}"
+                            Content="✓"
+                            Foreground="White" />
+                        <Button
+                            BorderThickness="0"
+                            Command="{Binding CancelPriceEditCommand}"
+                            Content="✕"
+                            Foreground="White" />
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Border>
 
         <!--
-            ════════════════════════════════════════════════════════
-            ③ 卡片瀑布流
-            ════════════════════════════════════════════════════════
+            ════════════════════════════════════════════════════
+            右上：今日收货统计
+            ════════════════════════════════════════════════════
+        -->
+        <Border
+            Grid.Row="0"
+            Grid.Column="2"
+            Padding="12"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel
+                    Grid.Row="0"
+                    Margin="0,0,0,8"
+                    Orientation="Horizontal">
+                    <pf:PackIcon
+                        Width="16"
+                        Height="16"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="ChartBoxOutline" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="{DynamicResource FontSize.H1.Large}"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Text="今日收货统计" />
+                </StackPanel>
+
+                <!--  LiveCharts 折线图  -->
+                <lvc:CartesianChart
+                    Grid.Row="1"
+                    Series="{Binding HourlySeries}"
+                    XAxes="{Binding XAxes}"
+                    YAxes="{Binding YAxes}"
+                    TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
+                    LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}" />
+
+                <!--  汇总数字  -->
+                <Grid Grid.Row="2" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="10"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            Text="合计净重" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource PrimaryTextBrush}"
+                            Text="{Binding TodayTotalWeight}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="10"
+                            Foreground="{DynamicResource SecondaryTextBrush}"
+                            Text="今日车次" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Foreground="{DynamicResource PrimaryTextBrush}">
+                            <Run Text="{Binding TodayVehicleCount, Mode=OneWay}" />
+                            <Run Text=" 次" />
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!--
+            ════════════════════════════════════════════════════
+            左下：来访建立档案
+            ════════════════════════════════════════════════════
         -->
         <Border
             Grid.Row="2"
-            Margin="8,0,8,8"
+            Grid.Column="0"
+            Padding="16,12"
             Background="{DynamicResource RegionBrush}"
-            CornerRadius="0,0,6,6">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <ItemsControl Margin="4" ItemsSource="{Binding QueueItems}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource QueueCard}"
-                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseLeftButtonDown">
-                                        <i:InvokeCommandAction Command="{Binding DataContext.CardClickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
+            CornerRadius="8"
+            VerticalAlignment="Top">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                                <!-- 右键菜单：删除卡片 + 查看/编辑（与左键二次称重弹窗区分） -->
-                                <Border.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="查看 / 编辑"
-                                                  Command="{Binding PlacementTarget.Tag.EditQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                        <Separator />
-                                        <MenuItem Header="删除卡片"
-                                                  Command="{Binding PlacementTarget.Tag.DeleteQueueItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                    </ContextMenu>
-                                </Border.ContextMenu>
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.ColumnSpan="3"
+                    Margin="0,0,0,8"
+                    Orientation="Horizontal">
+                    <pf:PackIcon
+                        Width="16"
+                        Height="16"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="ClipboardPlusOutline" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="{DynamicResource FontSize.H1.Large}"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Text="来访建立档案" />
+                </StackPanel>
 
-                                <Grid Margin="12,10">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="4" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="4" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="4" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="8" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+                <!--  车牌号 + 客户名称  -->
+                <StackPanel Grid.Row="2" Grid.Column="0">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="车牌号（可空）" />
+                    <TextBox
+                        Height="30"
+                        Padding="8,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding VehiclePlate, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="客户名称（可选）" />
+                    <TextBox
+                        Height="30"
+                        Padding="8,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
 
-                                    <!--  磅单号  -->
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        FontSize="12"
-                                        FontWeight="Bold"
-                                        Foreground="{DynamicResource PrimaryBrush}"
-                                        Text="{Binding TicketNo}" />
+                <!--  货物类别 + 备注  -->
+                <StackPanel Grid.Row="4" Grid.Column="0">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="货物类别 *" />
+                    <ComboBox
+                        Height="30"
+                        DisplayMemberPath="Name"
+                        FontSize="13"
+                        ItemsSource="{Binding GoodsCategories}"
+                        SelectedItem="{Binding SelectedCategory}" />
+                </StackPanel>
+                <StackPanel Grid.Row="4" Grid.Column="2">
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="备注（可选）" />
+                    <TextBox
+                        Height="30"
+                        Padding="8,0"
+                        VerticalContentAlignment="Center"
+                        FontSize="13"
+                        Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
 
-                                    <!--  车牌  -->
-                                    <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                        <pf:PackIcon
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Foreground="{DynamicResource SecondaryTextBrush}"
-                                            Kind="Car" />
+                <!--  采集重量区  -->
+                <Grid Grid.Row="6" Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--  已采集重量显示  -->
+                    <Border
+                        Grid.Column="0"
+                        Height="36"
+                        Padding="10,0"
+                        Background="{DynamicResource WindowBrush}"
+                        CornerRadius="4">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                Text="采集重量：" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource PrimaryTextBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="— 请采集 —" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasCapturedWeight}" Value="True">
+                                                <Setter Property="Text" Value="{Binding CapturedWeight, StringFormat='{}{0:F1} kg'}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Button
+                        Grid.Column="2"
+                        Width="110"
+                        Height="36"
+                        Command="{Binding CaptureWeightCommand}"
+                        Content="采 集 重 量"
+                        FontSize="13" />
+                </Grid>
+
+                <!--  确认入场  -->
+                <Button
+                    Grid.Row="8"
+                    Grid.ColumnSpan="3"
+                    Height="40"
+                    BorderThickness="0"
+                    Command="{Binding ConfirmEntryCommand}"
+                    Content="确  认  入  场"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="White" />
+            </Grid>
+        </Border>
+
+        <!--
+            ════════════════════════════════════════════════════
+            右下：卸货等待区（标题 + 卡片）
+            ════════════════════════════════════════════════════
+        -->
+        <Border
+            Grid.Row="2"
+            Grid.Column="2"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  标题栏  -->
+                <Border
+                    Grid.Row="0"
+                    Padding="14,8"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <pf:PackIcon
+                            Width="16"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource PrimaryBrush}"
+                            Kind="TruckDelivery" />
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="{DynamicResource FontSize.H2.Title}"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource PrimaryBrush}"
+                            Text="卸货等待区" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="共 " />
+                            <Run Text="{Binding QueueItems.Count, Mode=OneWay}" />
+                            <Run Text=" 辆待处理  — 点击卡片进行二次称重" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!--  卡片瀑布流  -->
+                <ScrollViewer
+                    Grid.Row="1"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Margin="4" ItemsSource="{Binding QueueItems}"
+                                  pf:RippleAssist.Feedback="{DynamicResource PrimaryBrush}"
+                                  pf:RippleAssist.CornerRadius="8">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource QueueCard}"
+                                        ClipToBounds="True"
+                                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseLeftButtonDown">
+                                            <i:InvokeCommandAction Command="{Binding DataContext.CardClickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+
+                                    <!-- 右键菜单：删除卡片 + 查看/编辑（与左键二次称重弹窗区分） -->
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="查看 / 编辑"
+                                                      Command="{Binding PlacementTarget.Tag.EditQueueCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                            <Separator />
+                                            <MenuItem Header="删除卡片"
+                                                      Command="{Binding PlacementTarget.Tag.DeleteQueueItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+
+                                    <pf:Ripple HorizontalContentAlignment="Stretch"
+                                               VerticalContentAlignment="Stretch">
+                                    <Grid Margin="12,10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="4" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="4" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="4" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="8" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <!--  磅单号  -->
                                         <TextBlock
-                                            Margin="4,0,0,0"
-                                            FontSize="11"
-                                            Foreground="{DynamicResource PrimaryTextBrush}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="{Binding VehiclePlate}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding VehiclePlate}" Value="{x:Null}">
-                                                            <Setter Property="Text" Value="无车牌" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </StackPanel>
-
-                                    <!--  货物  -->
-                                    <StackPanel Grid.Row="4" Orientation="Horizontal">
-                                        <pf:PackIcon
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Foreground="{DynamicResource SecondaryTextBrush}"
-                                            Kind="Package" />
-                                        <TextBlock
-                                            Margin="4,0,0,0"
-                                            FontSize="11"
-                                            Foreground="{DynamicResource PrimaryTextBrush}"
-                                            Text="{Binding GoodsName}" />
-                                    </StackPanel>
-
-                                    <!--  毛重 + 时间  -->
-                                    <StackPanel Grid.Row="6" Orientation="Horizontal">
-                                        <TextBlock
+                                            Grid.Row="0"
                                             FontSize="12"
                                             FontWeight="Bold"
-                                            Foreground="{DynamicResource PrimaryTextBrush}">
-                                            <Run Text="{Binding FirstWeight, StringFormat='{}{0:F1}'}" />
-                                            <Run FontSize="10" Text=" kg" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Margin="8,0,0,0"
-                                            VerticalAlignment="Bottom"
-                                            FontSize="10"
-                                            Foreground="{DynamicResource SecondaryTextBrush}"
-                                            Text="{Binding FirstWeighTime, StringFormat='HH:mm'}" />
-                                    </StackPanel>
+                                            Foreground="{DynamicResource PrimaryBrush}"
+                                            Text="{Binding TicketNo}" />
 
-                                    <!--  状态标签  -->
-                                    <Border
-                                        Grid.Row="8"
-                                        Padding="8,3"
-                                        HorizontalAlignment="Left"
-                                        CornerRadius="4">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#E3F2FD" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Status}" Value="1">
-                                                        <Setter Property="Background" Value="#FFF3E0" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock FontSize="10" FontWeight="Bold">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="初次录入" />
-                                                    <Setter Property="Foreground" Value="#1565C0" />
+                                        <!--  车牌  -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                            <pf:PackIcon
+                                                Width="16"
+                                                Height="16"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                                Kind="Car" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource PrimaryTextBrush}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="{Binding VehiclePlate}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding VehiclePlate}" Value="{x:Null}">
+                                                                <Setter Property="Text" Value="无车牌" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!--  货物  -->
+                                        <StackPanel Grid.Row="4" Orientation="Horizontal">
+                                            <pf:PackIcon
+                                                Width="16"
+                                                Height="16"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                                Kind="Package" />
+                                            <TextBlock
+                                                Margin="4,0,0,0"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource PrimaryTextBrush}"
+                                                Text="{Binding GoodsName}" />
+                                        </StackPanel>
+
+                                        <!--  毛重 + 时间  -->
+                                        <StackPanel Grid.Row="6" Orientation="Horizontal">
+                                            <TextBlock
+                                                FontSize="12"
+                                                FontWeight="Bold"
+                                                Foreground="{DynamicResource PrimaryTextBrush}">
+                                                <Run Text="{Binding FirstWeight, StringFormat='{}{0:F1}'}" />
+                                                <Run FontSize="10" Text=" kg" />
+                                            </TextBlock>
+                                            <TextBlock
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Bottom"
+                                                FontSize="10"
+                                                Foreground="{DynamicResource SecondaryTextBrush}"
+                                                Text="{Binding FirstWeighTime, StringFormat='HH:mm'}" />
+                                        </StackPanel>
+
+                                        <!--  状态标签  -->
+                                        <Border
+                                            Grid.Row="8"
+                                            Padding="8,3"
+                                            HorizontalAlignment="Left"
+                                            CornerRadius="4">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#E3F2FD" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Status}" Value="1">
-                                                            <Setter Property="Text" Value="卸货中" />
-                                                            <Setter Property="Foreground" Value="#E65100" />
+                                                            <Setter Property="Background" Value="#FFF3E0" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Border>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                            </Border.Style>
+                                            <TextBlock FontSize="10" FontWeight="Bold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="初次录入" />
+                                                        <Setter Property="Foreground" Value="#1565C0" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="1">
+                                                                <Setter Property="Text" Value="卸货中" />
+                                                                <Setter Property="Foreground" Value="#E65100" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                    </pf:Ripple>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

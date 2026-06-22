@@ -21,7 +21,7 @@ public class DynamicArchiveManager
             CREATE TABLE IF NOT EXISTS {TableName(year)} (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 TicketNo TEXT NOT NULL,
-                VehiclePlate TEXT NOT NULL,
+                VehiclePlate TEXT,
                 CustomerName TEXT NOT NULL,
                 GoodsName TEXT NOT NULL,
                 FirstWeighTime TEXT NOT NULL,
@@ -168,7 +168,7 @@ public class DynamicArchiveManager
     {
         Id = r.GetInt64(r.GetOrdinal("Id")),
         TicketNo = r.GetString(r.GetOrdinal("TicketNo")),
-        VehiclePlate = r.GetString(r.GetOrdinal("VehiclePlate")),
+        VehiclePlate = r.IsDBNull(r.GetOrdinal("VehiclePlate")) ? null : r.GetString(r.GetOrdinal("VehiclePlate")),
         CustomerName = r.GetString(r.GetOrdinal("CustomerName")),
         GoodsName = r.GetString(r.GetOrdinal("GoodsName")),
         FirstWeighTime = DateTime.Parse(r.GetString(r.GetOrdinal("FirstWeighTime"))),
@@ -185,11 +185,11 @@ public class DynamicArchiveManager
         Remark = r.IsDBNull(r.GetOrdinal("Remark")) ? null : r.GetString(r.GetOrdinal("Remark"))
     };
 
-    private static void AddParam(System.Data.IDbCommand cmd, string name, object value)
+    private static void AddParam(System.Data.IDbCommand cmd, string name, object? value)
     {
         var p = cmd.CreateParameter();
         p.ParameterName = name;
-        p.Value = value;
+        p.Value = value ?? DBNull.Value;
         cmd.Parameters.Add(p);
     }
 }
