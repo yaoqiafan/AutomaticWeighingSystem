@@ -27,9 +27,9 @@ public partial class MainWindow : PF.UI.Controls.Window
         if (DataContext is MainWindowViewModel vm)
             vm.LogEntries.CollectionChanged += OnLogEntriesChanged;
 
-        // 默认展开第一个菜单组
-        if (SideNav.Items.Count > 0 && SideNav.Items[0] is SideMenuItem firstGroup)
-            firstGroup.SwitchPanelArea(true);
+        // 菜单展开状态完全由 XAML 中 ExpandMode="ShowAll" 控制：
+        // 所有分组默认展开，且任何点击/导航都不会折叠。
+        // 皮肤切换只替换 Colors 字典（不触碰主题模板），故不会重置展开状态。
 
         // 同步主题图标
         SyncThemeIcon();

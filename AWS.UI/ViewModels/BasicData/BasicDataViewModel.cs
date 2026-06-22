@@ -1,4 +1,5 @@
 using AWS.Core.Entities;
+using AWS.Core.Interfaces;
 using AWS.Data;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -11,6 +12,7 @@ namespace AWS.UI.ViewModels.BasicData;
 public class BasicDataViewModel : BindableBase, INavigationAware
 {
     private readonly AwsDbContext _db;
+    private readonly ILogService _log;
 
     public ObservableCollection<Customer> Customers { get; } = [];
     public ObservableCollection<GoodsCategory> GoodsCategories { get; } = [];
@@ -45,9 +47,10 @@ public class BasicDataViewModel : BindableBase, INavigationAware
     public DelegateCommand DeleteVehicleCommand { get; }
     public DelegateCommand SaveAllCommand { get; }
 
-    public BasicDataViewModel(AwsDbContext db)
+    public BasicDataViewModel(AwsDbContext db, ILogService log)
     {
         _db = db;
+        _log = log;
 
         AddCustomerCommand = new DelegateCommand(() => AddCustomer());
         DeleteCustomerCommand = new DelegateCommand(DeleteCustomer, () => SelectedCustomer != null);
@@ -130,13 +133,11 @@ public class BasicDataViewModel : BindableBase, INavigationAware
         try
         {
             _db.SaveChanges();
-            System.Windows.MessageBox.Show("保存成功", "提示",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _log.Info($"基础数据已保存（客户{Customers.Count}/货物{GoodsCategories.Count}/车辆{Vehicles.Count}）", "基础数据");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _log.Error($"保存失败：{ex.Message}", "基础数据");
         }
     }
 }

@@ -13,6 +13,8 @@ public interface IWeighingService
         double? pricePerUnit = null);
     Task<List<WeighingQueue>> GetActiveQueueAsync();
     Task DeleteQueueItemAsync(long queueId);
+    Task UpdateQueueAsync(long id, string vehiclePlate, string customerName,
+        string goodsName, string? remark, double firstWeight);
     Task<double[]> GetTodayHourlyNetWeightAsync();
     Task<(double TotalWeight, int Count)> GetTodayStatsAsync();
 }

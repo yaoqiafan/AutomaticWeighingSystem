@@ -137,6 +137,19 @@ public class WeighingService : IWeighingService
         }
     }
 
+    public async Task UpdateQueueAsync(long id, string vehiclePlate, string customerName,
+        string goodsName, string? remark, double firstWeight)
+    {
+        var item = await _context.WeighingQueues.FindAsync(id)
+            ?? throw new InvalidOperationException($"磅单 {id} 不存在");
+        item.VehiclePlate = string.IsNullOrWhiteSpace(vehiclePlate) ? null : vehiclePlate.Trim().ToUpper();
+        item.CustomerName = customerName;
+        item.GoodsName = goodsName;
+        item.Remark = remark;
+        item.FirstWeight = firstWeight;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<double[]> GetTodayHourlyNetWeightAsync()
     {
         var result = new double[24];

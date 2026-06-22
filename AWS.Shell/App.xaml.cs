@@ -186,13 +186,13 @@ public partial class App : PrismApplication
 
     internal void UpdateSkin(SkinType skin = SkinType.Dark)
     {
+        
         var skins0 = Resources.MergedDictionaries[0];
         skins0.MergedDictionaries.Clear();
         skins0.MergedDictionaries.Add(new ResourceDictionary
         {
             Source = new Uri($"pack://application:,,,/PF.UI.Resources;component/Colors/{skin}.xaml")
         });
-
         var skins1 = Resources.MergedDictionaries[1];
         skins1.MergedDictionaries.Clear();
         skins1.MergedDictionaries.Add(new ResourceDictionary

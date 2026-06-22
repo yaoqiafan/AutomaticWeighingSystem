@@ -1,6 +1,6 @@
 using AWS.Core.Interfaces;
 using AWS.Core.Models;
-using PF.UI.Controls;
+using AWS.Shell.Controls;
 using PF.UI.Shared.Data;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -54,7 +54,14 @@ public class MainWindowViewModel : BindableBase
     public object? SelectedMenuItem
     {
         get => _selectedMenuItem;
-        set => SetProperty(ref _selectedMenuItem, value);
+        set
+        {
+            if (SetProperty(ref _selectedMenuItem, value) && value is SidebarItem item
+                && item.Tag is string target && !string.IsNullOrEmpty(target))
+            {
+                _regionManager.RequestNavigate(RegionNames.Main, target);
+            }
+        }
     }
 
     // ── 日志面板 ────────────────────────────────────────────
@@ -70,7 +77,6 @@ public class MainWindowViewModel : BindableBase
     public DelegateCommand LoadedCommand { get; }
     public DelegateCommand ClosingCommand { get; }
     public DelegateCommand ToggleThemeCommand { get; }
-    public DelegateCommand<object> NavigateCommand { get; }
     public DelegateCommand ToggleLogPanelCommand { get; }
     public DelegateCommand ClearLogCommand { get; }
 
@@ -97,7 +103,6 @@ public class MainWindowViewModel : BindableBase
         LoadedCommand = new DelegateCommand(OnLoaded);
         ClosingCommand = new DelegateCommand(OnClosing);
         ToggleThemeCommand = new DelegateCommand(OnToggleTheme);
-        NavigateCommand = new DelegateCommand<object>(OnNavigate);
         ToggleLogPanelCommand = new DelegateCommand(() => IsLogPanelOpen = !IsLogPanelOpen);
         ClearLogCommand = new DelegateCommand(_logService.Clear);
     }
@@ -125,16 +130,6 @@ public class MainWindowViewModel : BindableBase
                 ? SkinType.Default : SkinType.Dark;
             app.UpdateSkin(newSkin);
         }
-    }
-
-    private void OnNavigate(object args)
-    {
-        string? target = null;
-        if (args is FunctionEventArgs<object> fe && fe.Info is SideMenuItem item)
-            target = item.Tag as string;
-
-        if (!string.IsNullOrEmpty(target))
-            _regionManager.RequestNavigate(RegionNames.Main, target);
     }
 
     private void UpdateUserDisplay()

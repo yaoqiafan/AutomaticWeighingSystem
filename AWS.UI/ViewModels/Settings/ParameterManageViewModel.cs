@@ -1,72 +1,39 @@
 using AWS.Core.Entities;
+using AWS.Core.Interfaces;
 using AWS.Data;
+using AWS.UI.Models;
 using Microsoft.EntityFrameworkCore;
 using PF.UI.Shared.Data;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
-using System.Collections.ObjectModel;
 
 namespace AWS.UI.ViewModels.Settings;
 
 /// <summary>
-/// 参数管理：集中展示并修改所有 SystemSettings。
-/// 已知参数以表单形式编辑（含下拉/复选），其余参数以通用列表编辑。
+/// 参数管理：通过 PropertyGrid 绑定 SystemParameters POCO，集中展示并修改所有系统参数。
+/// 编辑器由控件库按属性类型自动生成；保存时将 POCO 值回写 SystemSettings。
 /// </summary>
 public class ParameterManageViewModel : BindableBase, INavigationAware
 {
     private readonly AwsDbContext _db;
+    private readonly ILogService _log;
 
-    // ── 通用参数（已知） ───────────────────────────────────
-    private string _companyName = string.Empty;
-    public string CompanyName { get => _companyName; set => SetProperty(ref _companyName, value); }
-
-    private string _defaultPricePerKg = "0";
-    public string DefaultPricePerKg { get => _defaultPricePerKg; set => SetProperty(ref _defaultPricePerKg, value); }
-
-    private bool _serialPortEnabled;
-    public bool SerialPortEnabled { get => _serialPortEnabled; set => SetProperty(ref _serialPortEnabled, value); }
-
-    private string _serialPortName = "COM1";
-    public string SerialPortName { get => _serialPortName; set => SetProperty(ref _serialPortName, value); }
-
-    private string _baudRate = "9600";
-    public string BaudRate { get => _baudRate; set => SetProperty(ref _baudRate, value); }
-
-    private SkinType _skinType = SkinType.Dark;
-    public SkinType SkinType { get => _skinType; set => SetProperty(ref _skinType, value); }
-
-    private bool _cloudSyncEnabled;
-    public bool CloudSyncEnabled { get => _cloudSyncEnabled; set => SetProperty(ref _cloudSyncEnabled, value); }
-
-    private string _cloudSyncUrl = string.Empty;
-    public string CloudSyncUrl { get => _cloudSyncUrl; set => SetProperty(ref _cloudSyncUrl, value); }
-
-    // 皮肤下拉选项（枚举值 + 中文显示名）
-    public SkinOption[] SkinOptions { get; } =
-    [
-        new(SkinType.Default, "浅色 (Default)"),
-        new(SkinType.Dark, "深色 (Dark)"),
-        new(SkinType.Violet, "紫色 (Violet)")
-    ];
-    public string[] BaudRateOptions { get; } = ["4800", "9600", "19200", "38400", "57600", "115200"];
-
-    // ── 其它参数（未知/扩展） ─────────────────────────────
-    public ObservableCollection<SystemSetting> OtherSettings { get; } = [];
-
-    private static readonly HashSet<string> KnownKeys = new()
+    private SystemParameters _parameters = new();
+    /// <summary>PropertyGrid 绑定的参数对象。</summary>
+    public SystemParameters Parameters
     {
-        SettingKeys.CompanyName, SettingKeys.DefaultPricePerKg,
-        SettingKeys.SerialPortEnabled, SettingKeys.SerialPortName, SettingKeys.BaudRate,
-        SettingKeys.SkinType, SettingKeys.CloudSyncEnabled, SettingKeys.CloudSyncUrl
-    };
+        get => _parameters;
+        private set => SetProperty(ref _parameters, value);
+    }
 
     public DelegateCommand SaveCommand { get; }
     public DelegateCommand ReloadCommand { get; }
 
-    public ParameterManageViewModel(AwsDbContext db)
+    public ParameterManageViewModel(AwsDbContext db, ILogService log)
     {
         _db = db;
+        _log = log;
         SaveCommand = new DelegateCommand(Save);
         ReloadCommand = new DelegateCommand(async () => await LoadAsync());
     }
@@ -79,51 +46,49 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
     {
         var all = await _db.SystemSettings.ToDictionaryAsync(s => s.Key);
 
-        CompanyName = Get(all, SettingKeys.CompanyName, "绿鑫资源");
-        DefaultPricePerKg = Get(all, SettingKeys.DefaultPricePerKg, "0");
-        SerialPortEnabled = Get(all, SettingKeys.SerialPortEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase);
-        SerialPortName = Get(all, SettingKeys.SerialPortName, "COM1");
-        BaudRate = Get(all, SettingKeys.BaudRate, "9600");
-        var skinStr = Get(all, SettingKeys.SkinType, nameof(SkinType.Dark));
-        SkinType = Enum.TryParse<SkinType>(skinStr, out var s) ? s : SkinType.Dark;
-        CloudSyncEnabled = Get(all, SettingKeys.CloudSyncEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase);
-        CloudSyncUrl = Get(all, SettingKeys.CloudSyncUrl, string.Empty);
-
-        OtherSettings.Clear();
-        foreach (var kv in all.Where(k => !KnownKeys.Contains(k.Key)))
-            OtherSettings.Add(kv.Value);
+        // 用新实例承载已加载值：引用变化 → PropertyGrid 自动刷新
+        Parameters = new SystemParameters
+        {
+            CompanyName = Get(all, SettingKeys.CompanyName, "绿鑫资源"),
+            DefaultPricePerKg = double.TryParse(Get(all, SettingKeys.DefaultPricePerKg, "0"), out var price) ? price : 0,
+            SerialPortEnabled = Get(all, SettingKeys.SerialPortEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
+            SerialPortName = Get(all, SettingKeys.SerialPortName, "COM1"),
+            BaudRate = int.TryParse(Get(all, SettingKeys.BaudRate, "9600"), out var baud) ? baud : 9600,
+            SkinType = Enum.TryParse<SkinType>(Get(all, SettingKeys.SkinType, nameof(SkinType.Dark)), out var s) ? s : SkinType.Dark,
+            CloudSyncEnabled = Get(all, SettingKeys.CloudSyncEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
+            CloudSyncUrl = Get(all, SettingKeys.CloudSyncUrl, string.Empty),
+        };
     }
-
-    private static string Get(Dictionary<string, SystemSetting> src, string key, string def)
-        => src.TryGetValue(key, out var s) ? s.Value : def;
 
     private void Save()
     {
+        var p = Parameters;
         try
         {
-            Set(SettingKeys.CompanyName, CompanyName);
-            Set(SettingKeys.DefaultPricePerKg, DefaultPricePerKg);
-            Set(SettingKeys.SerialPortEnabled, SerialPortEnabled ? "true" : "false");
-            Set(SettingKeys.SerialPortName, SerialPortName);
-            Set(SettingKeys.BaudRate, BaudRate);
-            Set(SettingKeys.SkinType, SkinType.ToString());
-            Set(SettingKeys.CloudSyncEnabled, CloudSyncEnabled ? "true" : "false");
-            Set(SettingKeys.CloudSyncUrl, CloudSyncUrl);
+            Set(SettingKeys.CompanyName, p.CompanyName);
+            Set(SettingKeys.DefaultPricePerKg, p.DefaultPricePerKg.ToString("F4"));
+            Set(SettingKeys.SerialPortEnabled, p.SerialPortEnabled ? "true" : "false");
+            Set(SettingKeys.SerialPortName, p.SerialPortName);
+            Set(SettingKeys.BaudRate, p.BaudRate.ToString());
+            Set(SettingKeys.SkinType, p.SkinType.ToString());
+            Set(SettingKeys.CloudSyncEnabled, p.CloudSyncEnabled ? "true" : "false");
+            Set(SettingKeys.CloudSyncUrl, p.CloudSyncUrl);
 
             _db.SaveChanges();
 
             // 皮肤即时生效（直接切换应用级资源字典，无需引用 Shell 层）
-            ApplySkin(SkinType);
+            ApplySkin(p.SkinType);
 
-            System.Windows.MessageBox.Show("参数已保存", "提示",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _log.Info($"参数已保存（皮肤：{p.SkinType}，单价：{p.DefaultPricePerKg:F2}，串口：{(p.SerialPortEnabled ? p.SerialPortName : "关闭")}）", "参数管理");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _log.Error($"保存失败：{ex.Message}", "参数管理");
         }
     }
+
+    private static string Get(Dictionary<string, SystemSetting> src, string key, string def)
+        => src.TryGetValue(key, out var s) ? s.Value : def;
 
     private void Set(string key, string value)
     {
@@ -133,13 +98,14 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
     }
 
     /// <summary>
-    /// 直接切换应用级合并字典中的皮肤资源，与 App.UpdateSkin 逻辑一致。
-    /// AWS.UI 不引用 AWS.Shell，故在此内联实现以保持皮肤即时切换。
+    /// 直接切换应用级合并字典中的皮肤色彩（slot[0]）。
+    /// 仅替换 Colors 字典，控件主题（slot[1] = Themes/Default.xaml）保持不动，
+    /// 避免触发控件模板重新应用而重置 SideMenu 等运行时状态。
     /// </summary>
     private static void ApplySkin(SkinType skin)
     {
         var app = System.Windows.Application.Current;
-        if (app?.Resources.MergedDictionaries is not { Count: >= 2 } dicts) return;
+        if (app?.Resources.MergedDictionaries is not { Count: >= 1 } dicts) return;
 
         var skins0 = dicts[0];
         skins0.MergedDictionaries.Clear();
@@ -147,15 +113,5 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
         {
             Source = new Uri($"pack://application:,,,/PF.UI.Resources;component/Colors/{skin}.xaml")
         });
-
-        var skins1 = dicts[1];
-        skins1.MergedDictionaries.Clear();
-        skins1.MergedDictionaries.Add(new System.Windows.ResourceDictionary
-        {
-            Source = new Uri("pack://application:,,,/PF.UI.Resources;component/Themes/Default.xaml")
-        });
     }
 }
-
-/// <summary>皮肤下拉项：枚举值 + 中文显示名。</summary>
-public record SkinOption(SkinType Value, string Display);

@@ -18,6 +18,7 @@ public class StatisticsViewModel : BindableBase, INavigationAware
     private readonly IWeighingService _weighing;
     private readonly IArchiveQueryService _archive;
     private readonly IExportService _export;
+    private readonly ILogService _log;
 
     // ── 图表（今日每小时净重） ─────────────────────────────
     private readonly ObservableValue[] _hourlyValues =
@@ -76,11 +77,13 @@ public class StatisticsViewModel : BindableBase, INavigationAware
     public StatisticsViewModel(
         IWeighingService weighing,
         IArchiveQueryService archive,
-        IExportService export)
+        IExportService export,
+        ILogService log)
     {
         _weighing = weighing;
         _archive = archive;
         _export = export;
+        _log = log;
 
         HourlySeries =
         [
@@ -98,9 +101,24 @@ public class StatisticsViewModel : BindableBase, INavigationAware
 
         XAxes =
         [
-            new Axis { Labels = Enumerable.Range(0, 24).Select(h => $"{h}时").ToArray(), TextSize = 9 }
+            new Axis
+            {
+                Labels = Enumerable.Range(0, 24).Select(h => $"{h}时").ToArray(),
+                TextSize = 9,
+                LabelsPaint = AWS.UI.Charts.ChartPaints.Text(),
+            }
         ];
-        YAxes = [new Axis { Name = "kg", NameTextSize = 10, TextSize = 9 }];
+        YAxes =
+        [
+            new Axis
+            {
+                Name = "kg",
+                NameTextSize = 10,
+                TextSize = 9,
+                LabelsPaint = AWS.UI.Charts.ChartPaints.Text(),
+                NamePaint = AWS.UI.Charts.ChartPaints.Text(),
+            }
+        ];
 
         QueryCommand = new DelegateCommand(async () => await QueryAsync());
         ResetFilterCommand = new DelegateCommand(ResetFilter);
@@ -153,11 +171,11 @@ public class StatisticsViewModel : BindableBase, INavigationAware
             RecordCount = Records.Count;
             TotalNetWeight = Math.Round(Records.Sum(r => r.NetWeight), 1);
             ExportCommand.RaiseCanExecuteChanged();
+            _log.Info($"查询完成：{Records.Count} 条记录，年份 {SelectedYear}", "数据统计");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"查询失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _log.Error($"查询失败：{ex.Message}", "数据统计");
         }
     }
 
@@ -181,13 +199,11 @@ public class StatisticsViewModel : BindableBase, INavigationAware
         try
         {
             await _export.ExportToExcelAsync(Records.ToList(), dlg.FileName);
-            System.Windows.MessageBox.Show($"已导出 {Records.Count} 条记录到：\n{dlg.FileName}",
-                "导出成功", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _log.Info($"已导出 {Records.Count} 条记录：{dlg.FileName}", "数据统计");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _log.Error($"导出失败：{ex.Message}", "数据统计");
         }
     }
 
@@ -206,11 +222,11 @@ public class StatisticsViewModel : BindableBase, INavigationAware
             Records.Remove(r);
             RecordCount = Records.Count;
             TotalNetWeight = Math.Round(Records.Sum(x => x.NetWeight), 1);
+            _log.Warn($"已删除磅单：{r.TicketNo}", "数据统计");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            _log.Error($"删除失败：{ex.Message}", "数据统计");
         }
     }
 }

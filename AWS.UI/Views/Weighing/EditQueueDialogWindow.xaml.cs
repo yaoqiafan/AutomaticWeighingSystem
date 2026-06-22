@@ -2,9 +2,9 @@ using AWS.UI.ViewModels.Weighing;
 
 namespace AWS.UI.Views.Weighing;
 
-public partial class SecondWeighDialogWindow : PF.UI.Controls.Window
+public partial class EditQueueDialogWindow : PF.UI.Controls.Window
 {
-    public SecondWeighDialogWindow(SecondWeighDialogViewModel vm)
+    public EditQueueDialogWindow(EditQueueDialogViewModel vm)
     {
         InitializeComponent();
         DataContext = vm;
@@ -13,6 +13,5 @@ public partial class SecondWeighDialogWindow : PF.UI.Controls.Window
             DialogResult = vm.Succeeded;
             Close();
         };
-        Closed += (_, _) => vm.Detach();
     }
 }

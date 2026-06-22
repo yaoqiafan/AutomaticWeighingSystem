@@ -6,6 +6,7 @@
     xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
     xmlns:prism="http://prismlibrary.com/"
     xmlns:shell="clr-namespace:AWS.Shell"
+    xmlns:ctrl="clr-namespace:AWS.Shell.Controls"
     Title="绿鑫资源 — 智能过磅系统"
     Width="1400" Height="900"
     MinWidth="1200" MinHeight="700"
@@ -15,6 +16,56 @@
     ShowNonClientArea="True"
     Style="{StaticResource WindowWin10}"
     prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <pf:Window.Resources>
+        <!-- 侧边栏导航项样式：平铺、点击选中高亮、左侧主色竖条标记当前项 -->
+        <Style TargetType="ctrl:SidebarItem">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body.Standard}" />
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ctrl:SidebarItem">
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="3,0,0,0"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ContentPresenter Content="{TemplateBinding Icon}"
+                                                  VerticalAlignment="Center" />
+                                <TextBlock Text="{TemplateBinding Header}"
+                                           Margin="10,0,0,0"
+                                           FontSize="{TemplateBinding FontSize}"
+                                           FontWeight="{TemplateBinding FontWeight}"
+                                           Foreground="{TemplateBinding Foreground}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource SecondaryRegionBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background"
+                                        Value="{DynamicResource RegionBrush}" />
+                                <Setter TargetName="Bd" Property="BorderBrush"
+                                        Value="{DynamicResource PrimaryBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </pf:Window.Resources>
 
     <!-- 标题栏 -->
     <pf:Window.NonClientAreaContent>
@@ -75,86 +126,62 @@
             <Border Grid.Column="0"
                     BorderBrush="{DynamicResource PrimaryBrush}"
                     BorderThickness="0,0,1,0">
-                <pf:SideMenu x:Name="SideNav"
-                             Width="180" Margin="4"
-                             ExpandMode="Freedom"
-                             SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}">
-                    <pf:Interaction.Triggers>
-                        <pf:EventTrigger EventName="SelectionChanged">
-                            <pf:EventToCommand Command="{Binding NavigateCommand}"
-                                               PassEventArgsToCommand="True" />
-                        </pf:EventTrigger>
-                    </pf:Interaction.Triggers>
+                <ctrl:Sidebar x:Name="SideNav"
+                              Width="180" Margin="4"
+                              Background="Transparent"
+                              SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
 
-                    <!-- 过磅操作 -->
-                    <pf:SideMenuItem Header="过磅操作" Tag="WeighingView"
-                                     FontSize="{DynamicResource FontSize.Body.Standard}">
-                        <pf:SideMenuItem.Icon>
-                            <pf:PackIcon Kind="ScaleBalance" Width="18" Height="18" />
-                        </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="主操作台" Tag="WeighingView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="MonitorDashboard" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                    </pf:SideMenuItem>
+                    <!-- 主操作台 -->
+                    <ctrl:SidebarItem Header="主操作台" Tag="WeighingView">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon Kind="MonitorDashboard" Width="18" Height="18" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
 
-                    <!-- 数据统计（单页：图表 + 档案表 + 导出） -->
-                    <pf:SideMenuItem Header="数据统计" Tag="StatisticsView"
-                                     FontSize="{DynamicResource FontSize.Body.Standard}">
-                        <pf:SideMenuItem.Icon>
+                    <!-- 数据统计 -->
+                    <ctrl:SidebarItem Header="数据统计" Tag="StatisticsView">
+                        <ctrl:SidebarItem.Icon>
                             <pf:PackIcon Kind="ChartBar" Width="18" Height="18" />
-                        </pf:SideMenuItem.Icon>
-                    </pf:SideMenuItem>
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
 
-                    <!-- 基础数据（Admin） -->
-                    <pf:SideMenuItem Header="基础数据"
-                                     FontSize="{DynamicResource FontSize.Body.Standard}"
-                                     Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <pf:SideMenuItem.Icon>
-                            <pf:PackIcon Kind="DatabaseEdit" Width="18" Height="18" />
-                        </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="综合管理" Tag="BasicDataView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="ClipboardListOutline" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                    </pf:SideMenuItem>
+                    <!-- 综合管理（Admin） -->
+                    <ctrl:SidebarItem Header="综合管理" Tag="BasicDataView"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon Kind="ClipboardListOutline" Width="18" Height="18" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
 
-                    <!-- 系统设置（Admin） -->
-                    <pf:SideMenuItem Header="系统设置"
-                                     FontSize="{DynamicResource FontSize.Body.Standard}"
-                                     Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <pf:SideMenuItem.Icon>
-                            <pf:PackIcon Kind="Cog" Width="18" Height="18" />
-                        </pf:SideMenuItem.Icon>
-                        <pf:SideMenuItem Header="参数管理" Tag="ParameterManageView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="Tune" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="用户管理" Tag="UserManageView"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="AccountCog" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                        <pf:SideMenuItem Header="云同步" Tag="CloudSyncView" IsEnabled="False"
-                                         Padding="20,0,0,0"
-                                         FontSize="{DynamicResource FontSize.Body.Small}">
-                            <pf:SideMenuItem.Icon>
-                                <pf:PackIcon Kind="CloudSync" Width="14" Height="14" />
-                            </pf:SideMenuItem.Icon>
-                        </pf:SideMenuItem>
-                    </pf:SideMenuItem>
-                </pf:SideMenu>
+                    <!-- 参数管理（Admin） -->
+                    <ctrl:SidebarItem Header="参数管理" Tag="ParameterManageView"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon Kind="Tune" Width="18" Height="18" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
+
+                    <!-- 用户管理（Admin） -->
+                    <ctrl:SidebarItem Header="用户管理" Tag="UserManageView"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon Kind="AccountCog" Width="18" Height="18" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
+
+                    <!-- 云同步（Admin，暂未启用） -->
+                    <ctrl:SidebarItem Header="云同步" Tag="CloudSyncView" IsEnabled="False"
+                                      Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon Kind="CloudSync" Width="18" Height="18" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
+                </ctrl:Sidebar>
             </Border>
 
             <!-- 右侧内容区 -->

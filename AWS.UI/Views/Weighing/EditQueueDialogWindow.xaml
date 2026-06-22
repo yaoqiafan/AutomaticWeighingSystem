@@ -1,0 +1,96 @@
+<pf:Window x:Class="AWS.UI.Views.Weighing.EditQueueDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+        Title="查看 / 编辑磅单" Width="440" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource WindowBrush}">
+
+    <pf:Window.Resources>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </pf:Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 磅单号（只读） -->
+        <Border Grid.Row="0" Background="{DynamicResource RegionBrush}"
+                CornerRadius="6" Padding="12,10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="磅单号：" Style="{StaticResource LabelStyle}" />
+                <TextBlock Text="{Binding QueueItem.TicketNo}" FontSize="14" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- 可编辑字段 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0">
+                <TextBlock Text="车牌号" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding VehiclePlate, UpdateSourceTrigger=PropertyChanged}"
+                         Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="2">
+                <TextBlock Text="客户名称" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}"
+                         Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Grid.Column="0">
+                <TextBlock Text="货物名称" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding GoodsName, UpdateSourceTrigger=PropertyChanged}"
+                         Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Row="2" Grid.Column="2">
+                <TextBlock Text="首次重量 (kg)" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
+                <TextBox Text="{Binding FirstWeightText, UpdateSourceTrigger=PropertyChanged}"
+                         Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <!-- 备注 -->
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="备注" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
+            <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                     Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
+        </StackPanel>
+
+        <!-- 操作按钮 -->
+        <Grid Grid.Row="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="取  消" Height="38" FontSize="13"
+                    Command="{Binding CancelCommand}" />
+            <Button Grid.Column="2" Content="保  存" Height="38" FontSize="13"
+                    Command="{Binding SaveCommand}"
+                    Background="#1976D2" Foreground="White" FontWeight="SemiBold" />
+        </Grid>
+    </Grid>
+</pf:Window>

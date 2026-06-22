@@ -1,20 +1,22 @@
-<UserControl x:Class="AWS.UI.Views.Statistics.StatisticsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-             xmlns:prism="http://prismlibrary.com/"
-             prism:ViewModelLocator.AutoWireViewModel="True">
+<UserControl
+    x:Class="AWS.UI.Views.Statistics.StatisticsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+    xmlns:charts="clr-namespace:AWS.UI.Charts"
+    xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    xmlns:prism="http://prismlibrary.com/"
+    prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
-        <!-- 分区标题 -->
+        <!--  分区标题  -->
         <Style x:Key="SectionTitle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="{DynamicResource FontSize.H2.Title}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
         </Style>
 
-        <!-- 统计卡片数字 -->
+        <!--  统计卡片数字  -->
         <Style x:Key="StatValue" TargetType="TextBlock">
             <Setter Property="FontSize" Value="22" />
             <Setter Property="FontWeight" Value="Bold" />
@@ -31,12 +33,15 @@
 
     <Grid Margin="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />   <!-- 顶部统计 + 筛选 -->
-            <RowDefinition Height="220" />     <!-- 折线图 -->
-            <RowDefinition Height="*" />       <!-- 档案表 -->
+            <RowDefinition Height="Auto" />
+            <!--  顶部统计 + 筛选  -->
+            <RowDefinition Height="220" />
+            <!--  折线图  -->
+            <RowDefinition Height="*" />
+            <!--  档案表  -->
         </Grid.RowDefinitions>
 
-        <!-- ═══ 顶部：统计卡片 + 筛选条件 + 操作按钮 ═══ -->
+        <!--  ═══ 顶部：统计卡片 + 筛选条件 + 操作按钮 ═══  -->
         <Grid Grid.Row="0" Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -49,143 +54,255 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- 今日合计净重 -->
-            <Border Grid.Column="0" Background="{DynamicResource RegionBrush}"
-                    CornerRadius="8" Padding="20,10" MinWidth="120">
+            <!--  今日合计净重  -->
+            <Border
+                Grid.Column="0"
+                MinWidth="120"
+                Padding="20,10"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="8">
                 <StackPanel VerticalAlignment="Center">
-                    <pf:PackIcon Kind="Weight" Width="20" Height="20"
-                                 Foreground="{DynamicResource PrimaryBrush}"
-                                 HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding TodayTotalWeight}" Style="{StaticResource StatValue}" Margin="0,4,0,0" />
-                    <TextBlock Text="今日合计净重" Style="{StaticResource StatLabel}" />
+                    <pf:PackIcon
+                        Width="20"
+                        Height="20"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="Weight" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Style="{StaticResource StatValue}"
+                        Text="{Binding TodayTotalWeight}" />
+                    <TextBlock Style="{StaticResource StatLabel}" Text="今日合计净重" />
                 </StackPanel>
             </Border>
 
-            <!-- 今日车次 -->
-            <Border Grid.Column="2" Background="{DynamicResource RegionBrush}"
-                    CornerRadius="8" Padding="20,10" MinWidth="120">
+            <!--  今日车次  -->
+            <Border
+                Grid.Column="2"
+                MinWidth="120"
+                Padding="20,10"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="8">
                 <StackPanel VerticalAlignment="Center">
-                    <pf:PackIcon Kind="TruckFast" Width="20" Height="20"
-                                 Foreground="{DynamicResource PrimaryBrush}"
-                                 HorizontalAlignment="Center" />
-                    <TextBlock Style="{StaticResource StatValue}" Margin="0,4,0,0">
+                    <pf:PackIcon
+                        Width="20"
+                        Height="20"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="TruckFast" />
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource StatValue}">
                         <Run Text="{Binding TodayVehicleCount, Mode=OneWay}" /><Run Text=" 次" />
                     </TextBlock>
-                    <TextBlock Text="今日车次" Style="{StaticResource StatLabel}" />
+                    <TextBlock Style="{StaticResource StatLabel}" Text="今日车次" />
                 </StackPanel>
             </Border>
 
-            <!-- 查询结果汇总 -->
-            <Border Grid.Column="4" Background="{DynamicResource RegionBrush}"
-                    CornerRadius="8" Padding="20,10" MinWidth="120">
+            <!--  查询结果汇总  -->
+            <Border
+                Grid.Column="4"
+                MinWidth="120"
+                Padding="20,10"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="8">
                 <StackPanel VerticalAlignment="Center">
-                    <pf:PackIcon Kind="DatabaseSearch" Width="20" Height="20"
-                                 Foreground="{DynamicResource PrimaryBrush}"
-                                 HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding RecordCount, StringFormat='{}{0} 条'}"
-                               Style="{StaticResource StatValue}" Margin="0,4,0,0" />
-                    <TextBlock Text="查询结果" Style="{StaticResource StatLabel}" />
+                    <pf:PackIcon
+                        Width="20"
+                        Height="20"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="DatabaseSearch" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Style="{StaticResource StatValue}"
+                        Text="{Binding RecordCount, StringFormat='{}{0} 条'}" />
+                    <TextBlock Style="{StaticResource StatLabel}" Text="查询结果" />
                 </StackPanel>
             </Border>
 
-            <!-- 筛选条件 -->
-            <Border Grid.Column="5" Background="{DynamicResource RegionBrush}"
-                    CornerRadius="8" Padding="10,6" Margin="0,0,8,0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="年份" VerticalAlignment="Center" Margin="0,0,4,0"
-                               FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
-                    <ComboBox ItemsSource="{Binding AvailableYears}"
-                              SelectedItem="{Binding SelectedYear}"
-                              Width="80" Height="28" />
+            <!--  筛选条件  -->
+            <Border
+                Grid.Column="5"
+                Margin="0,0,8,0"
+                Padding="10,6"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="8">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,4,0"
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="年份" />
+                    <ComboBox
+                        Width="80"
+                        Height="28"
+                        ItemsSource="{Binding AvailableYears}"
+                        SelectedItem="{Binding SelectedYear}" />
 
-                    <TextBlock Text="从" VerticalAlignment="Center" Margin="12,0,4,0"
-                               FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
-                    <DatePicker SelectedDate="{Binding DateFrom}" Width="120" Height="28" />
+                    <TextBlock
+                        Margin="12,0,4,0"
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="从" />
+                    <DatePicker
+                        Width="120"
+                        Height="28"
+                        SelectedDate="{Binding DateFrom}" />
 
-                    <TextBlock Text="至" VerticalAlignment="Center" Margin="8,0,4,0"
-                               FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
-                    <DatePicker SelectedDate="{Binding DateTo}" Width="120" Height="28" />
+                    <TextBlock
+                        Margin="8,0,4,0"
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="至" />
+                    <DatePicker
+                        Width="120"
+                        Height="28"
+                        SelectedDate="{Binding DateTo}" />
 
-                    <TextBlock Text="车牌" VerticalAlignment="Center" Margin="12,0,4,0"
-                               FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
-                    <TextBox Text="{Binding VehiclePlateFilter, UpdateSourceTrigger=PropertyChanged}"
-                             Width="90" Height="28" VerticalContentAlignment="Center" Padding="6,0" />
+                    <TextBlock
+                        Margin="12,0,4,0"
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="车牌" />
+                    <TextBox
+                        Width="90"
+                        Height="28"
+                        Padding="6,0"
+                        VerticalContentAlignment="Center"
+                        Text="{Binding VehiclePlateFilter, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Border>
 
-            <!-- 操作按钮 -->
-            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="查询" Width="64" Height="32" Margin="0,0,6,0"
-                        Command="{Binding QueryCommand}" />
-                <Button Content="重置" Width="64" Height="32" Margin="0,0,6,0"
-                        Command="{Binding ResetFilterCommand}"
-                        Background="Transparent" BorderThickness="1" />
+            <!--  操作按钮  -->
+            <StackPanel
+                Grid.Column="6"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Button
+                    Width="64"
+                    Height="32"
+                    Margin="0,0,6,0"
+                    Command="{Binding QueryCommand}"
+                    Content="查询" />
+                <Button
+                    Width="64"
+                    Height="32"
+                    Margin="0,0,6,0"
+                    Background="Transparent"
+                    BorderThickness="1"
+                    Command="{Binding ResetFilterCommand}"
+                    Content="重置" />
             </StackPanel>
-            <Button Grid.Column="7" Content="导出 Excel" Width="92" Height="32"
-                    Command="{Binding ExportCommand}"
-                    Background="#4CAF50" Foreground="White" BorderThickness="0"
-                    VerticalAlignment="Center" />
+            <Button
+                Grid.Column="7"
+                Width="92"
+                Height="32"
+                VerticalAlignment="Center"
+                Background="#4CAF50"
+                BorderThickness="0"
+                Command="{Binding ExportCommand}"
+                Content="导出 Excel"
+                Foreground="White" />
         </Grid>
 
-        <!-- ═══ 今日每小时净重折线图 ═══ -->
-        <Border Grid.Row="1" Background="{DynamicResource RegionBrush}" CornerRadius="8" Padding="10,6">
+        <!--  ═══ 今日每小时净重折线图 ═══  -->
+        <Border
+            Grid.Row="1"
+            Padding="10,6"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal">
-                    <pf:PackIcon Kind="ChartLine" Width="16" Height="16"
-                                 Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="今日每小时净重趋势" Margin="5,0,0,0" Style="{StaticResource SectionTitle}"
-                               FontSize="{DynamicResource FontSize.Body.Standard}" />
+                    <pf:PackIcon
+                        Width="16"
+                        Height="16"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Kind="ChartLine" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        FontSize="{DynamicResource FontSize.Body.Standard}"
+                        Style="{StaticResource SectionTitle}"
+                        Text="今日每小时净重趋势" />
                 </StackPanel>
-                <lvc:CartesianChart Grid.Row="1"
-                                    Series="{Binding HourlySeries}"
-                                    XAxes="{Binding XAxes}"
-                                    YAxes="{Binding YAxes}" />
+                <lvc:CartesianChart
+                    Grid.Row="1"
+                    Series="{Binding HourlySeries}"
+                    XAxes="{Binding XAxes}"
+                    YAxes="{Binding YAxes}"
+                    TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
+                    LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}" />
             </Grid>
         </Border>
 
-        <!-- ═══ 档案查询表 ═══ -->
-        <Border Grid.Row="2" Background="{DynamicResource RegionBrush}" CornerRadius="8" Padding="8" Margin="0,8,0,0">
+        <!--  ═══ 档案查询表 ═══  -->
+        <Border
+            Grid.Row="2"
+            Margin="0,8,0,0"
+            Padding="8"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <DockPanel Grid.Row="0" Margin="2,0,2,6">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                        <pf:PackIcon Kind="FileDocumentOutline" Width="16" Height="16"
-                                     Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Text="过磅档案明细" Margin="5,0,0,0" Style="{StaticResource SectionTitle}"
-                                   FontSize="{DynamicResource FontSize.Body.Standard}" />
-                        <TextBlock Margin="10,0,0,0" FontSize="11"
-                                   Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                        <pf:PackIcon
+                            Width="16"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource PrimaryBrush}"
+                            Kind="FileDocumentOutline" />
+                        <TextBlock
+                            Margin="5,0,0,0"
+                            FontSize="{DynamicResource FontSize.Body.Standard}"
+                            Style="{StaticResource SectionTitle}"
+                            Text="过磅档案明细" />
+                        <TextBlock
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{DynamicResource SecondaryTextBrush}">
                             <Run Text="净重合计 " /><Run Text="{Binding TotalNetWeight, Mode=OneWay, StringFormat='{}{0:F1}'}" /><Run Text=" kg" />
                         </TextBlock>
                     </StackPanel>
-                    <Button DockPanel.Dock="Right" HorizontalAlignment="Right"
-                            Content="删除选中" Width="80" Height="26"
-                            Command="{Binding DeleteCommand}"
-                            Background="Transparent" Foreground="#F44336" BorderThickness="1" />
+                    <Button
+                        Width="80"
+                        Height="26"
+                        HorizontalAlignment="Right"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        Command="{Binding DeleteCommand}"
+                        Content="删除选中"
+                        DockPanel.Dock="Right"
+                        Foreground="#F44336" />
                 </DockPanel>
 
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding Records}"
-                          SelectedItem="{Binding SelectedRecord}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          GridLinesVisibility="Horizontal"
-                          BorderThickness="1"
-                          BorderBrush="{DynamicResource BorderBrush}"
-                          HeadersVisibility="Column"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          SelectionMode="Single"
-                          FontSize="11"
-                          RowHeight="26"
-                          ColumnHeaderHeight="28">
+                <DataGrid
+                    Grid.Row="1"
+                    AutoGenerateColumns="False"
+                    BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    ColumnHeaderHeight="28"
+                    FontSize="11"
+                    GridLinesVisibility="Horizontal"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding Records}"
+                    RowHeight="26"
+                    SelectedItem="{Binding SelectedRecord}"
+                    SelectionMode="Single">
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
@@ -207,17 +324,17 @@
                         </Style>
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="磅单号" Binding="{Binding TicketNo}" />
-                        <DataGridTextColumn Header="车牌" Binding="{Binding VehiclePlate}" />
-                        <DataGridTextColumn Header="客户" Binding="{Binding CustomerName}" />
-                        <DataGridTextColumn Header="货物" Binding="{Binding GoodsName}" />
-                        <DataGridTextColumn Header="毛重(kg)" Binding="{Binding GrossWeight, StringFormat=F1}" />
-                        <DataGridTextColumn Header="皮重(kg)" Binding="{Binding TareWeight, StringFormat=F1}" />
-                        <DataGridTextColumn Header="净重(kg)" Binding="{Binding NetWeight, StringFormat=F1}" />
-                        <DataGridTextColumn Header="单价" Binding="{Binding PricePerUnit, StringFormat=F2}" />
-                        <DataGridTextColumn Header="金额" Binding="{Binding TotalAmount, StringFormat=F2}" />
-                        <DataGridTextColumn Header="操作员" Binding="{Binding OperatorName}" />
-                        <DataGridTextColumn Header="存档时间" Binding="{Binding ArchivedAt, StringFormat=yyyy-MM-dd HH:mm}" />
+                        <DataGridTextColumn Binding="{Binding TicketNo}" Header="磅单号" />
+                        <DataGridTextColumn Binding="{Binding VehiclePlate}" Header="车牌" />
+                        <DataGridTextColumn Binding="{Binding CustomerName}" Header="客户" />
+                        <DataGridTextColumn Binding="{Binding GoodsName}" Header="货物" />
+                        <DataGridTextColumn Binding="{Binding GrossWeight, StringFormat=F1}" Header="毛重(kg)" />
+                        <DataGridTextColumn Binding="{Binding TareWeight, StringFormat=F1}" Header="皮重(kg)" />
+                        <DataGridTextColumn Binding="{Binding NetWeight, StringFormat=F1}" Header="净重(kg)" />
+                        <DataGridTextColumn Binding="{Binding PricePerUnit, StringFormat=F2}" Header="单价" />
+                        <DataGridTextColumn Binding="{Binding TotalAmount, StringFormat=F2}" Header="金额" />
+                        <DataGridTextColumn Binding="{Binding OperatorName}" Header="操作员" />
+                        <DataGridTextColumn Binding="{Binding ArchivedAt, StringFormat=yyyy-MM-dd HH:mm}" Header="存档时间" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

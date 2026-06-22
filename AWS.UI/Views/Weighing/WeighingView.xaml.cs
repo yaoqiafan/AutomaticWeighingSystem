@@ -15,7 +15,10 @@ public partial class WeighingView : UserControl
     private void OnLoaded(object sender, System.Windows.RoutedEventArgs e)
     {
         if (DataContext is WeighingViewModel vm)
+        {
             vm.OpenSecondWeighDialog = OpenSecondWeighDialogAsync;
+            vm.OpenEditQueueDialog = OpenEditQueueDialogAsync;
+        }
     }
 
     private Task<bool> OpenSecondWeighDialogAsync(WeighingQueue item, double defaultPrice)
@@ -26,7 +29,8 @@ public partial class WeighingView : UserControl
             item,
             defaultPrice,
             vm.SerialPortService,
-            (id, secondWeight, price) => vm.ArchiveItemAsync(id, secondWeight, price));
+            (id, secondWeight, price) => vm.ArchiveItemAsync(id, secondWeight, price),
+            vm.LogService);
 
         var dialog = new SecondWeighDialogWindow(dialogVm)
         {
@@ -34,4 +38,22 @@ public partial class WeighingView : UserControl
         };
         return Task.FromResult(dialog.ShowDialog() == true);
     }
+
+    private Task<bool> OpenEditQueueDialogAsync(WeighingQueue item)
+    {
+        if (DataContext is not WeighingViewModel vm) return Task.FromResult(false);
+
+        var dialogVm = new EditQueueDialogViewModel(
+            item,
+            (id, plate, customer, goods, remark, weight) =>
+                vm.UpdateQueueAsync(id, plate, customer, goods, remark, weight),
+            vm.LogService);
+
+        var dialog = new EditQueueDialogWindow(dialogVm)
+        {
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+        return Task.FromResult(dialog.ShowDialog() == true);
+    }
 }
+

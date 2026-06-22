@@ -22,6 +22,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private readonly IWeighingService _weighingService;
     private readonly IUserService _userService;
     private readonly AwsDbContext _db;
+    private readonly ILogService _log;
     private readonly DispatcherTimer _statsTimer;
     private readonly Dispatcher _dispatcher;
 
@@ -138,11 +139,28 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     // ── 对话框回调（由 View code-behind 赋值） ───────────────
     public Func<WeighingQueue, double, Task<bool>>? OpenSecondWeighDialog { get; set; }
+    public Func<WeighingQueue, Task<bool>>? OpenEditQueueDialog { get; set; }
 
     internal ISerialPortService SerialPortService => _serial;
+    internal ILogService LogService => _log;
 
     internal async Task ArchiveItemAsync(long queueId, double secondWeight, double? price)
         => await _weighingService.ArchiveAsync(queueId, secondWeight, price);
+
+    internal async Task<bool> UpdateQueueAsync(long id, string vehiclePlate,
+        string customerName, string goodsName, string? remark, double firstWeight)
+    {
+        try
+        {
+            await _weighingService.UpdateQueueAsync(id, vehiclePlate, customerName, goodsName, remark, firstWeight);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"修改磅单失败：{ex.Message}", "过磅");
+            return false;
+        }
+    }
 
     // ── Commands ────────────────────────────────────────────
     public DelegateCommand CaptureWeightCommand { get; }
@@ -151,17 +169,21 @@ public class WeighingViewModel : BindableBase, INavigationAware
     public DelegateCommand SavePriceCommand { get; }
     public DelegateCommand CancelPriceEditCommand { get; }
     public DelegateCommand<WeighingQueue> CardClickCommand { get; }
+    public DelegateCommand<WeighingQueue> DeleteQueueItemCommand { get; }
+    public DelegateCommand<WeighingQueue> EditQueueCommand { get; }
 
     public WeighingViewModel(
         ISerialPortService serial,
         IWeighingService weighingService,
         IUserService userService,
-        AwsDbContext db)
+        AwsDbContext db,
+        ILogService log)
     {
         _serial = serial;
         _weighingService = weighingService;
         _userService = userService;
         _db = db;
+        _log = log;
         _dispatcher = Application.Current.Dispatcher;
 
         HourlySeries =
@@ -184,12 +206,20 @@ public class WeighingViewModel : BindableBase, INavigationAware
             {
                 Labels = Enumerable.Range(0, 24).Select(h => $"{h}时").ToArray(),
                 TextSize = 9,
+                LabelsPaint = AWS.UI.Charts.ChartPaints.Text(),
             }
         ];
 
         YAxes =
         [
-            new Axis { Name = "kg", NameTextSize = 10, TextSize = 9 }
+            new Axis
+            {
+                Name = "kg",
+                NameTextSize = 10,
+                TextSize = 9,
+                LabelsPaint = AWS.UI.Charts.ChartPaints.Text(),
+                NamePaint = AWS.UI.Charts.ChartPaints.Text(),
+            }
         ];
 
         CaptureWeightCommand = new DelegateCommand(OnCaptureWeight, () => _isStable);
@@ -201,6 +231,8 @@ public class WeighingViewModel : BindableBase, INavigationAware
         SavePriceCommand = new DelegateCommand(OnSavePrice);
         CancelPriceEditCommand = new DelegateCommand(() => IsPriceEditing = false);
         CardClickCommand = new DelegateCommand<WeighingQueue>(OnCardClick);
+        DeleteQueueItemCommand = new DelegateCommand<WeighingQueue>(async item => await OnDeleteQueueItemAsync(item));
+        EditQueueCommand = new DelegateCommand<WeighingQueue>(async item => await OnEditQueueAsync(item));
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
         _statsTimer.Tick += async (_, _) => await RefreshStatsAsync();
@@ -301,10 +333,11 @@ public class WeighingViewModel : BindableBase, INavigationAware
             CapturedWeight = null;
 
             await RefreshQueueAsync();
+            _log.Info($"入场登记成功：{_selectedCategory?.Name ?? "-"} {_capturedWeight:F1}kg", "过磅");
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"入场失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            _log.Error($"入场失败：{ex.Message}", "过磅");
         }
     }
 
@@ -312,7 +345,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     {
         if (!double.TryParse(PriceEditText, out double newPrice) || newPrice < 0)
         {
-            MessageBox.Show("请输入有效的单价（≥ 0）", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _log.Warn($"单价无效，已忽略：{PriceEditText}", "过磅");
             return;
         }
         var setting = _db.SystemSettings.Find(SettingKeys.DefaultPricePerKg);
@@ -323,6 +356,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         }
         CurrentPricePerKg = newPrice;
         IsPriceEditing = false;
+        _log.Info($"默认单价已更新为 {newPrice:F2} 元/kg", "过磅");
     }
 
     private async void OnCardClick(WeighingQueue item)
@@ -334,5 +368,32 @@ public class WeighingViewModel : BindableBase, INavigationAware
             await RefreshQueueAsync();
             await RefreshStatsAsync();
         }
+    }
+
+    private async Task OnDeleteQueueItemAsync(WeighingQueue? item)
+    {
+        if (item == null) return;
+        var confirm = System.Windows.MessageBox.Show(
+            $"确认删除磅单 {item.TicketNo}？", "确认删除",
+            System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+        if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+        try
+        {
+            await _weighingService.DeleteQueueItemAsync(item.Id);
+            _log.Warn($"已删除磅单：{item.TicketNo}", "过磅");
+            await RefreshQueueAsync();
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"删除磅单失败：{ex.Message}", "过磅");
+        }
+    }
+
+    private async Task OnEditQueueAsync(WeighingQueue? item)
+    {
+        if (item == null || OpenEditQueueDialog == null) return;
+        bool updated = await OpenEditQueueDialog(item);
+        if (updated) await RefreshQueueAsync();
     }
 }

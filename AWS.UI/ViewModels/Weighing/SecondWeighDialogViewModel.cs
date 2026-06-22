@@ -12,6 +12,7 @@ public class SecondWeighDialogViewModel : BindableBase
     private readonly ISerialPortService _serial;
     private readonly Func<long, double, double?, Task> _archiveFunc;
     private readonly Dispatcher _dispatcher;
+    private readonly ILogService _log;
 
     public WeighingQueue QueueItem { get; }
 
@@ -83,11 +84,13 @@ public class SecondWeighDialogViewModel : BindableBase
         WeighingQueue item,
         double defaultPrice,
         ISerialPortService serial,
-        Func<long, double, double?, Task> archiveFunc)
+        Func<long, double, double?, Task> archiveFunc,
+        ILogService log)
     {
         QueueItem = item;
         _serial = serial;
         _archiveFunc = archiveFunc;
+        _log = log;
         _priceText = defaultPrice.ToString("F2");
         _dispatcher = Dispatcher.CurrentDispatcher;
 
@@ -135,13 +138,14 @@ public class SecondWeighDialogViewModel : BindableBase
         try
         {
             await _archiveFunc(QueueItem.Id, _capturedSecondWeight.Value, price);
+            _log.Info($"二次称重存档完成：{QueueItem.TicketNo} 净重 {NetWeight:F1}kg", "二次称重");
             Succeeded = true;
             Detach();
             CloseWindow?.Invoke();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"存档失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            _log.Error($"存档失败：{ex.Message}", "二次称重");
         }
     }
 }
