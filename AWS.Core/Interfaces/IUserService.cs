@@ -11,5 +11,7 @@ public interface IUserService
     Task<List<User>> GetAllUsersAsync();
     Task CreateUserAsync(string username, string password, Enums.UserRole role);
     Task UpdatePasswordAsync(int userId, string newPassword);
+    Task UpdateUserAsync(int userId, string username, Enums.UserRole role);
     Task SetUserActiveAsync(int userId, bool isActive);
+    Task DeleteUserAsync(int userId);
 }

@@ -43,12 +43,12 @@
             </Grid.ColumnDefinitions>
 
             <!-- PropertyGrid：绑定 SystemParameters POCO，自动反射所有可浏览属性 -->
-            <Border Grid.Column="1" Background="{DynamicResource RegionBrush}" CornerRadius="6" Padding="8">
-                <pf:PropertyGrid SelectedObject="{Binding Parameters}"
+            <pf:Card Grid.Column="1" Height="auto" Background="{DynamicResource RegionBrush}" Margin="45"  pf:BorderElement.CornerRadius="20" >
+                <pf:PropertyGrid SelectedObject="{Binding Parameters}" Margin="5" 
                       ShowSortButton="True"
                       MinTitleWidth="120"
                       MaxTitleWidth="200" />
-            </Border>
+            </pf:Card>
         </Grid>
         
        

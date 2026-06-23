@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    xmlns:behaviors="clr-namespace:AWS.UI.Behaviors;assembly=AWS.UI"
     Title="登录"
     Width="420"
     Height="340"
@@ -54,7 +55,8 @@
         <TextBox
             x:Name="TxtUsername"
             Grid.Row="4"
-            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
+            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+             behaviors:EnterKeyTraversalBehavior.IsEnabled="True"/>
 
         <TextBlock
             Grid.Row="6"
@@ -63,7 +65,13 @@
         <PasswordBox
             x:Name="PwdBox"
             Grid.Row="8"
-            PasswordChanged="PwdBox_PasswordChanged" />
+            PasswordChanged="PwdBox_PasswordChanged" 
+          >
+            <PasswordBox.InputBindings>
+                <KeyBinding Command="{Binding LoginCommand}" Key="Enter" />
+            </PasswordBox.InputBindings>
+        </PasswordBox>
+        
 
         <TextBlock
             Grid.Row="10"

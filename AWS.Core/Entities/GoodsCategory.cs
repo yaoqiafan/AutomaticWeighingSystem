@@ -7,4 +7,5 @@ public class GoodsCategory
     public string? Remark { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
+    public double? PricePerUnit { get; set; }
 }

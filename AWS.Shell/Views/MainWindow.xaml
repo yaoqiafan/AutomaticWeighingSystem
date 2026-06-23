@@ -8,10 +8,11 @@
     xmlns:prism="http://prismlibrary.com/"
     xmlns:shell="clr-namespace:AWS.Shell"
     Width="1400"
-    Height="900"
+    Height="1000"
     MinWidth="1200"
-    MinHeight="700"
+    MinHeight="1000"
     prism:ViewModelLocator.AutoWireViewModel="True"
+    Closing="Window_Closing"
     NonClientAreaHeight="60"
     ShowNonClientArea="True"
     Style="{StaticResource WindowWin10}"
@@ -127,6 +128,8 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+       
     </pf:Window.Resources>
 
     <!--  标题栏  -->
@@ -157,11 +160,11 @@
                 Color="{DynamicResource PrimaryBrush}" />
 
             <!--  主题切换  -->
-            <Button VerticalAlignment="Top"
+            <Button
                 x:Name="ThemeBtn"
                 Grid.Column="3"
                 Width="36"
-
+                VerticalAlignment="Top"
                 Background="Transparent"
                 BorderThickness="0"
                 Click="ToggleThemeBtn_Click"
@@ -174,14 +177,14 @@
                     Kind="WeatherSunny" />
             </Button>
 
-           
+
         </Grid>
     </pf:Window.NonClientAreaContent>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="Auto" />   
+            <RowDefinition Height="Auto" />
             <!--  日志面板（折叠时占 0 高）  -->
             <RowDefinition Height="32" />
         </Grid.RowDefinitions>
@@ -219,13 +222,23 @@
                         </ctrl:SidebarItem.Icon>
                     </ctrl:SidebarItem>
 
-                    <!--  数据统计  -->
-                    <ctrl:SidebarItem Header="数据统计" Tag="StatisticsView">
+                    <!--  今日汇总  -->
+                    <ctrl:SidebarItem Header="今日汇总" Tag="DashboardView">
                         <ctrl:SidebarItem.Icon>
                             <pf:PackIcon
                                 Width="18"
                                 Height="18"
-                                Kind="ChartBar" />
+                                Kind="ViewDashboard" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
+
+                    <!--  历史查询  -->
+                    <ctrl:SidebarItem Header="历史查询" Tag="HistoryView">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon
+                                Width="18"
+                                Height="18"
+                                Kind="History" />
                         </ctrl:SidebarItem.Icon>
                     </ctrl:SidebarItem>
 
@@ -403,11 +416,11 @@
                             <DataTemplate>
                                 <Grid Margin="4,1">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="72" />   
+                                        <ColumnDefinition Width="72" />
                                         <!--  时间  -->
-                                        <ColumnDefinition Width="36" />   
+                                        <ColumnDefinition Width="36" />
                                         <!--  级别  -->
-                                        <ColumnDefinition Width="*" />    
+                                        <ColumnDefinition Width="*" />
                                         <!--  消息  -->
                                     </Grid.ColumnDefinitions>
 
@@ -516,6 +529,8 @@
                 </StackPanel>
             </StatusBarItem>
         </StatusBar>
+
+     
     </Grid>
 
     <i:Interaction.Triggers>

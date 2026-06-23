@@ -18,6 +18,7 @@ namespace AWS.Shell;
 
 public partial class App : PrismApplication
 {
+  public App() : base() { this.ShutdownMode = ShutdownMode.OnExplicitShutdown; }
     private static readonly string DbPath =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "LxAws", "weighing.db");
@@ -88,7 +89,7 @@ public partial class App : PrismApplication
     protected override Window CreateShell()
     {
         var userService = Container.Resolve<IUserService>();
-
+        ApplySkin();
         if (DevAutoLogin)
         {
             userService.LoginAsync("superuser", DateTime.Now.ToString("yyyyMMddHH00"))
@@ -104,7 +105,6 @@ public partial class App : PrismApplication
             }
         }
 
-        ApplySkin();
         return Container.Resolve<MainWindow>();
     }
 
@@ -153,6 +153,8 @@ public partial class App : PrismApplication
     {
         var db = containerRegistry.GetContainer().Resolve<AwsDbContext>();
         db.Database.EnsureCreated();
+        // 对已存在数据库添加新列（SQLite 仅支持 ADD COLUMN）
+        try { db.Database.ExecuteSqlRaw("ALTER TABLE GoodsCategories ADD COLUMN PricePerUnit REAL"); } catch { }
     }
 
     private void InitializeSerialPort()

@@ -143,4 +143,28 @@ public partial class MainWindow : PF.UI.Controls.Window
             db.SaveChanges();
         }
     }
+
+
+    private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+
+
+
+       var result =  MessageBox.Show("确定要退出系统吗？",
+            "退出提示",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            Environment.Exit(0);
+        }
+        else
+        {
+            // 用户点击了“否”，取消关闭操作，程序继续运行
+            e.Cancel = true;
+        }
+    }
+
+
 }

@@ -40,7 +40,7 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
 
     public async void OnNavigatedTo(NavigationContext ctx) => await LoadAsync();
     public void OnNavigatedFrom(NavigationContext ctx) { }
-    public bool IsNavigationTarget(NavigationContext ctx) => true;
+    public bool IsNavigationTarget(NavigationContext ctx) => false;
 
     private async Task LoadAsync()
     {

@@ -73,11 +73,28 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateUserAsync(int userId, string username, UserRole role)
+    {
+        var user = await _context.Users.FindAsync(userId)
+            ?? throw new InvalidOperationException("用户不存在");
+        user.Username = username.Trim();
+        user.Role = role;
+        await _context.SaveChangesAsync();
+    }
+
     public async Task SetUserActiveAsync(int userId, bool isActive)
     {
         var user = await _context.Users.FindAsync(userId)
             ?? throw new InvalidOperationException("用户不存在");
         user.IsActive = isActive;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteUserAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return;
+        _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
 

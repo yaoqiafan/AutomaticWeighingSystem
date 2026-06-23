@@ -43,29 +43,17 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     public bool IsSimulationMode => _serial.IsSimulationMode;
 
-    // ── 单价快捷修改（Admin） ───────────────────────────────
-    private double _currentPricePerKg;
-    public double CurrentPricePerKg
-    {
-        get => _currentPricePerKg;
-        private set => SetProperty(ref _currentPricePerKg, value);
-    }
-
-    private bool _isPriceEditing;
-    public bool IsPriceEditing
-    {
-        get => _isPriceEditing;
-        set => SetProperty(ref _isPriceEditing, value);
-    }
-
-    private string _priceEditText = "0";
-    public string PriceEditText
-    {
-        get => _priceEditText;
-        set => SetProperty(ref _priceEditText, value);
-    }
-
+    // ── 品类单价 ──────────────────────────────────────────
     public bool IsAdmin => _userService.IsAdmin;
+    public bool IsNotAdmin => !_userService.IsAdmin;
+
+    // 入场表单中货物类别选定后显示的参考单价（只读提示）
+    private string _entryPriceHint = string.Empty;
+    public string EntryPriceHint
+    {
+        get => _entryPriceHint;
+        private set => SetProperty(ref _entryPriceHint, value);
+    }
 
     // ── 入场表单 ────────────────────────────────────────────
     private string _vehiclePlate = string.Empty;
@@ -86,7 +74,14 @@ public class WeighingViewModel : BindableBase, INavigationAware
     public GoodsCategory? SelectedCategory
     {
         get => _selectedCategory;
-        set { SetProperty(ref _selectedCategory, value); ConfirmEntryCommand.RaiseCanExecuteChanged(); }
+        set
+        {
+            SetProperty(ref _selectedCategory, value);
+            ConfirmEntryCommand.RaiseCanExecuteChanged();
+            EntryPriceHint = value?.PricePerUnit is double p && p > 0
+                ? $"{p:F2} 元/kg"
+                : "（未设置）";
+        }
     }
 
     private string _remark = string.Empty;
@@ -165,9 +160,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     // ── Commands ────────────────────────────────────────────
     public DelegateCommand CaptureWeightCommand { get; }
     public DelegateCommand ConfirmEntryCommand { get; }
-    public DelegateCommand StartPriceEditCommand { get; }
-    public DelegateCommand SavePriceCommand { get; }
-    public DelegateCommand CancelPriceEditCommand { get; }
+    public DelegateCommand SaveCategoryPricesCommand { get; }
     public DelegateCommand<WeighingQueue> CardClickCommand { get; }
     public DelegateCommand<WeighingQueue> DeleteQueueItemCommand { get; }
     public DelegateCommand<WeighingQueue> EditQueueCommand { get; }
@@ -225,11 +218,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         CaptureWeightCommand = new DelegateCommand(OnCaptureWeight, () => _isStable);
         ConfirmEntryCommand = new DelegateCommand(OnConfirmEntry,
             () => HasCapturedWeight && _selectedCategory != null);
-        StartPriceEditCommand = new DelegateCommand(
-            () => { PriceEditText = _currentPricePerKg.ToString("F2"); IsPriceEditing = true; },
-            () => IsAdmin);
-        SavePriceCommand = new DelegateCommand(OnSavePrice);
-        CancelPriceEditCommand = new DelegateCommand(() => IsPriceEditing = false);
+        SaveCategoryPricesCommand = new DelegateCommand(async () => await OnSaveCategoryPricesAsync(), () => IsAdmin);
         CardClickCommand = new DelegateCommand<WeighingQueue>(OnCardClick);
         DeleteQueueItemCommand = new DelegateCommand<WeighingQueue>(async item => await OnDeleteQueueItemAsync(item));
         EditQueueCommand = new DelegateCommand<WeighingQueue>(async item => await OnEditQueueAsync(item));
@@ -244,7 +233,8 @@ public class WeighingViewModel : BindableBase, INavigationAware
         _serial.WeightReceived += OnWeightReceived;
         RaisePropertyChanged(nameof(IsSimulationMode));
         RaisePropertyChanged(nameof(IsAdmin));
-        StartPriceEditCommand.RaiseCanExecuteChanged();
+        RaisePropertyChanged(nameof(IsNotAdmin));
+        SaveCategoryPricesCommand.RaiseCanExecuteChanged();
         _statsTimer.Start();
         await LoadInitialDataAsync();
     }
@@ -255,7 +245,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         _statsTimer.Stop();
     }
 
-    public bool IsNavigationTarget(NavigationContext ctx) => true;
+    public bool IsNavigationTarget(NavigationContext ctx) => false;
 
     private async Task LoadInitialDataAsync()
     {
@@ -265,9 +255,6 @@ public class WeighingViewModel : BindableBase, INavigationAware
             GoodsCategories.Clear();
             foreach (var c in cats) GoodsCategories.Add(c);
         });
-
-        var priceStr = _db.SystemSettings.Find(SettingKeys.DefaultPricePerKg)?.Value ?? "0";
-        CurrentPricePerKg = double.TryParse(priceStr, out double p) ? p : 0;
 
         await RefreshQueueAsync();
         await RefreshStatsAsync();
@@ -344,28 +331,26 @@ public class WeighingViewModel : BindableBase, INavigationAware
         }
     }
 
-    private void OnSavePrice()
+    private async Task OnSaveCategoryPricesAsync()
     {
-        if (!double.TryParse(PriceEditText, out double newPrice) || newPrice < 0)
+        try
         {
-            _log.Warn($"单价无效，已忽略：{PriceEditText}", "过磅");
-            return;
+            // GoodsCategories 实体由 DbContext 跟踪，直接保存即可
+            await _db.SaveChangesAsync();
+            _log.Info("品类单价已保存", "过磅");
         }
-        var setting = _db.SystemSettings.Find(SettingKeys.DefaultPricePerKg);
-        if (setting != null)
+        catch (Exception ex)
         {
-            setting.Value = newPrice.ToString("F4");
-            _db.SaveChanges();
+            _log.Error($"保存单价失败：{ex.Message}", "过磅");
         }
-        CurrentPricePerKg = newPrice;
-        IsPriceEditing = false;
-        _log.Info($"默认单价已更新为 {newPrice:F2} 元/kg", "过磅");
     }
 
     private async void OnCardClick(WeighingQueue item)
     {
         if (OpenSecondWeighDialog == null) return;
-        bool archived = await OpenSecondWeighDialog(item, CurrentPricePerKg);
+        // 以当前品类的 PricePerUnit 作为二次称重弹窗的默认单价
+        var price = GoodsCategories.FirstOrDefault(c => c.Id == item.GoodsCategoryId)?.PricePerUnit ?? 0;
+        bool archived = await OpenSecondWeighDialog(item, price);
         if (archived)
         {
             await RefreshQueueAsync();

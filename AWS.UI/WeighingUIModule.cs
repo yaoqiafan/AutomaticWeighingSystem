@@ -18,8 +18,11 @@ public class WeighingUIModule : IModule
         // 过磅操作
         containerRegistry.RegisterForNavigation<WeighingView, WeighingViewModel>(nameof(WeighingView));
 
-        // 数据统计（单页：图表 + 档案表 + 导出）
-        containerRegistry.RegisterForNavigation<StatisticsView, StatisticsViewModel>(nameof(StatisticsView));
+        // 今日汇总（数据看板）
+        containerRegistry.RegisterForNavigation<DashboardView, DashboardViewModel>(nameof(DashboardView));
+
+        // 历史查询（档案明细 + 导出 + 图表分析）
+        containerRegistry.RegisterForNavigation<HistoryView, HistoryViewModel>(nameof(HistoryView));
 
         // 基础数据综合管理
         containerRegistry.RegisterForNavigation<BasicDataView, BasicDataViewModel>(nameof(BasicDataView));

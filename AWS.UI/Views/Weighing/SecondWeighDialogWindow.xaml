@@ -5,7 +5,7 @@
         Title="二次称重" Width="440" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
-        Background="{DynamicResource WindowBrush}">
+        >
 
     <pf:Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolVis" />

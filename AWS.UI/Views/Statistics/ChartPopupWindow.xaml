@@ -1,0 +1,67 @@
+<pf:Window
+    x:Class="AWS.UI.Views.Statistics.ChartPopupWindow"
+    xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+    Title="{Binding WindowTitle}"
+    Width="780"
+    Height="560"
+    MinWidth="600"
+    MinHeight="420"
+    ResizeMode="CanResizeWithGrip"
+    WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  图表类型切换栏  -->
+        <Border
+            Grid.Row="0"
+            Margin="0,0,0,10"
+            Padding="10,6"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="6">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Text="图表类型：" />
+                <ComboBox
+                    Width="160"
+                    Height="28"
+                    ItemsSource="{Binding ChartTypeNames}"
+                    SelectedIndex="{Binding SelectedChartTypeIndex}" />
+                <TextBlock
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="11"
+                    Foreground="Gray"
+                    Text="提示：可切换图表类型重新分析当前数据" />
+            </StackPanel>
+        </Border>
+
+        <!--  图表区域（CartesianChart / PieChart 按 Visibility 互斥显示）  -->
+        <Grid Grid.Row="1">
+            <lvc:CartesianChart
+                Visibility="{Binding CartesianVisibility}"
+                LegendPosition="Right"
+                LegendTextPaint="{Binding LegendTextPaint}"
+                Series="{Binding CartesianSeries}"
+                TooltipTextPaint="{Binding TooltipTextPaint}"
+                XAxes="{Binding XAxes}"
+                YAxes="{Binding YAxes}" />
+
+            <lvc:PieChart
+                Visibility="{Binding PieVisibility}"
+                LegendPosition="Right"
+                LegendTextPaint="{Binding LegendTextPaint}"
+                Series="{Binding PieSeries}"
+                TooltipTextPaint="{Binding TooltipTextPaint}" />
+        </Grid>
+    </Grid>
+</pf:Window>

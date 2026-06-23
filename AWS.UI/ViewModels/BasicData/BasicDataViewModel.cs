@@ -67,7 +67,7 @@ public class BasicDataViewModel : BindableBase, INavigationAware
     }
 
     public void OnNavigatedFrom(NavigationContext ctx) { }
-    public bool IsNavigationTarget(NavigationContext ctx) => true;
+    public bool IsNavigationTarget(NavigationContext ctx) => false;
 
     private async Task LoadAllAsync()
     {
