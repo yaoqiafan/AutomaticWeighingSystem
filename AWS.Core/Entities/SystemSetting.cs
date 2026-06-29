@@ -16,4 +16,5 @@ public static class SettingKeys
     public const string CloudSyncUrl = "CloudSyncUrl";
     public const string DefaultPricePerKg = "DefaultPricePerKg";
     public const string SerialPortEnabled = "SerialPortEnabled";
+    public const string WeightUnit = "WeightUnit";  // "kg" or "ton"
 }

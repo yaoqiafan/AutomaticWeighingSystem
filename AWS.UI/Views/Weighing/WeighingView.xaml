@@ -399,17 +399,21 @@
                             FontSize="{DynamicResource FontSize.H1.Large}"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource PrimaryBrush}"
-                            Text="今日收货统计" />
+                            Text="今日收货净重（按品类 / 浅灰=汇总）" />
                     </StackPanel>
 
                     <!--  LiveCharts 折线图  -->
                     <lvc:CartesianChart
                         Grid.Row="1"
+                        LegendPosition="Hidden"
                         LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}"
                         Series="{Binding HourlySeries}"
+                        TooltipFindingStrategy="CompareAllTakeClosest"
+                        TooltipPosition="Auto"
                         TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
                         XAxes="{Binding XAxes}"
-                        YAxes="{Binding YAxes}" />
+                        YAxes="{Binding YAxes}"
+                        ZoomMode="X" />
 
                     <!--  汇总数字  -->
                     <Grid Grid.Row="2" Margin="0,8,0,0">

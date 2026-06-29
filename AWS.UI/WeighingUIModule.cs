@@ -8,6 +8,7 @@ using AWS.UI.ViewModels.Statistics;
 using AWS.UI.ViewModels.Weighing;
 using Prism.Ioc;
 using Prism.Modularity;
+using AWS.Core.Interfaces;
 
 namespace AWS.UI;
 
@@ -31,6 +32,9 @@ public class WeighingUIModule : IModule
         containerRegistry.RegisterForNavigation<ParameterManageView, ParameterManageViewModel>(nameof(ParameterManageView));
         containerRegistry.RegisterForNavigation<UserManageView, UserManageViewModel>(nameof(UserManageView));
         containerRegistry.RegisterForNavigation<CloudSyncView, CloudSyncViewModel>(nameof(CloudSyncView));
+
+        // 送货对话框 ViewModel（transient，每次打开新实例）
+        containerRegistry.Register<AddDeliveryDialogViewModel>();
     }
 
     public void OnInitialized(IContainerProvider containerProvider) { }

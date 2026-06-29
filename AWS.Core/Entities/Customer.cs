@@ -1,3 +1,5 @@
+using AWS.Core.Enums;
+
 namespace AWS.Core.Entities;
 
 public class Customer
@@ -8,4 +10,5 @@ public class Customer
     public string? Address { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
+    public CustomerType Type { get; set; } = CustomerType.Supplier;
 }

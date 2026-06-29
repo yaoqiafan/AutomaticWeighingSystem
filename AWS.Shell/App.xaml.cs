@@ -137,6 +137,7 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IArchiveQueryService, ArchiveQueryService>();
         containerRegistry.RegisterSingleton<IExportService, ExportService>();
         containerRegistry.RegisterSingleton<ICloudSyncService, CloudSyncService>();
+        containerRegistry.RegisterSingleton<IDeliveryService, DeliveryService>();
 
         containerRegistry.RegisterForNavigation<LoginWindow>();
         containerRegistry.RegisterForNavigation<MainWindow>();
@@ -155,6 +156,68 @@ public partial class App : PrismApplication
         db.Database.EnsureCreated();
         // 对已存在数据库添加新列（SQLite 仅支持 ADD COLUMN）
         try { db.Database.ExecuteSqlRaw("ALTER TABLE GoodsCategories ADD COLUMN PricePerUnit REAL"); } catch { }
+        try { db.Database.ExecuteSqlRaw("ALTER TABLE Customers ADD COLUMN Type INTEGER NOT NULL DEFAULT 0"); } catch { }
+
+        // 检测旧 Schema（含 GoodsName 列），存在则删除旧表并重建（多品类明细重构）
+        try
+        {
+            var conn = db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT COUNT(*) FROM pragma_table_info('DeliveryRecords') WHERE name='GoodsName'";
+                var hasOld = Convert.ToInt64(cmd.ExecuteScalar() ?? 0L) > 0;
+                if (hasOld)
+                {
+                    db.Database.ExecuteSqlRaw("DROP TABLE IF EXISTS DeliveryItems");
+                    db.Database.ExecuteSqlRaw("DROP TABLE IF EXISTS DeliveryRecords");
+                }
+            }
+        }
+        catch { }
+
+        try
+        {
+            db.Database.ExecuteSqlRaw("""
+                CREATE TABLE IF NOT EXISTS DeliveryRecords (
+                    Id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    TicketNo     TEXT    NOT NULL,
+                    CustomerId   INTEGER,
+                    CustomerName TEXT    NOT NULL DEFAULT '',
+                    OperatorId   INTEGER NOT NULL DEFAULT 0,
+                    OperatorName TEXT    NOT NULL DEFAULT '',
+                    DeliveryTime TEXT    NOT NULL,
+                    TotalWeight  REAL    NOT NULL DEFAULT 0,
+                    TotalAmount  REAL,
+                    Remark       TEXT
+                )
+                """);
+        }
+        catch { }
+
+        try
+        {
+            db.Database.ExecuteSqlRaw("""
+                CREATE TABLE IF NOT EXISTS DeliveryItems (
+                    Id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                    DeliveryRecordId INTEGER NOT NULL,
+                    GoodsCategoryId  INTEGER,
+                    GoodsName        TEXT    NOT NULL DEFAULT '',
+                    Weight           REAL    NOT NULL DEFAULT 0,
+                    PricePerUnit     REAL,
+                    Amount           REAL
+                )
+                """);
+        }
+        catch { }
+
+        // 补充 WeightUnit 默认值
+        try
+        {
+            db.Database.ExecuteSqlRaw(
+                "INSERT OR IGNORE INTO SystemSettings (Key, Value) VALUES ('WeightUnit', 'kg')");
+        }
+        catch { }
     }
 
     private void InitializeSerialPort()

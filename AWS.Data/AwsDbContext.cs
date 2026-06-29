@@ -12,12 +12,20 @@ public class AwsDbContext : DbContext
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<WeighingQueue> WeighingQueues => Set<WeighingQueue>();
     public DbSet<SystemSetting> SystemSettings => Set<SystemSetting>();
+    public DbSet<DeliveryRecord> DeliveryRecords => Set<DeliveryRecord>();
+    public DbSet<DeliveryItem> DeliveryItems => Set<DeliveryItem>();
 
     public AwsDbContext(DbContextOptions<AwsDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SystemSetting>().HasKey(e => e.Key);
+
+        modelBuilder.Entity<DeliveryRecord>()
+            .HasMany(r => r.Items)
+            .WithOne(i => i.DeliveryRecord)
+            .HasForeignKey(i => i.DeliveryRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 

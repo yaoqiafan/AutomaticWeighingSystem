@@ -2,11 +2,20 @@
     x:Class="AWS.Shell.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:prism="http://prismlibrary.com/">
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:converters="clr-namespace:AWS.UI.Converters;assembly=AWS.UI"
+    xmlns:enums="clr-namespace:AWS.Core.Enums;assembly=AWS.Core"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <Application.Resources>
         <ResourceDictionary>
             <!--  全局通用转换器  -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:CustomerTypeConverter x:Key="CustomerTypeConverter" />
+            <x:Array x:Key="CustomerTypeValues" Type="{x:Type enums:CustomerType}">
+                <enums:CustomerType>Supplier</enums:CustomerType>
+                <enums:CustomerType>Buyer</enums:CustomerType>
+                <enums:CustomerType>Both</enums:CustomerType>
+            </x:Array>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
                     <ResourceDictionary.MergedDictionaries>

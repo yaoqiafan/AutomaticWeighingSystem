@@ -16,5 +16,5 @@ public interface IWeighingService
     Task UpdateQueueAsync(long id, string vehiclePlate, string customerName,
         string goodsName, string? remark, double firstWeight);
     Task<double[]> GetTodayHourlyNetWeightAsync();
-    Task<(double TotalWeight, int Count)> GetTodayStatsAsync();
+    Task<(double TotalWeight, int Count, double TotalAmount)> GetTodayStatsAsync();
 }

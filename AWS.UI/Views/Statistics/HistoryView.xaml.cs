@@ -2,7 +2,6 @@ using AWS.Core.Entities;
 using AWS.UI.ViewModels.Statistics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace AWS.UI.Views.Statistics;
 
@@ -12,9 +11,6 @@ public partial class HistoryView : UserControl
     {
         InitializeComponent();
 
-        // ViewModelLocator 在 InitializeComponent 内部同步设置 DataContext，
-        // 因此必须在 InitializeComponent 之后立即订阅当前 VM 的事件，
-        // 再设置 DataContextChanged 以应对后续可能的替换。
         if (DataContext is HistoryViewModel current)
             current.ShowChartRequested += OpenChartWindow;
 
@@ -38,19 +34,15 @@ public partial class HistoryView : UserControl
             .MergedDictionaries.FirstOrDefault()?.Source?.ToString()
             .Contains("Dark", StringComparison.OrdinalIgnoreCase) ?? false;
 
-    private void RecordsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void WeighingGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is HistoryViewModel vm && sender is DataGrid dg)
-            vm.UpdateSelection(dg.SelectedItems.Cast<WeighingArchiveRecord>());
+            vm.UpdateWeighingSelection(dg.SelectedItems.Cast<WeighingArchiveRecord>());
     }
 
-    // 右键点击已选中的行时，阻止 DataGrid 将多选重置为单选，
-    // 确保 ContextMenu 打开时 SelectedRecords 中仍保留之前的多选结果。
-    private void RecordsGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    private void DeliveryGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject dep &&
-            ItemsControl.ContainerFromElement(RecordsGrid, dep) is DataGridRow row &&
-            row.IsSelected)
-            e.Handled = true;
+        if (DataContext is HistoryViewModel vm && sender is DataGrid dg)
+            vm.UpdateDeliverySelection(dg.SelectedItems.Cast<DeliveryRecord>());
     }
 }

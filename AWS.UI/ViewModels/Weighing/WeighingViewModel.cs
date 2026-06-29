@@ -20,11 +20,24 @@ public class WeighingViewModel : BindableBase, INavigationAware
 {
     private readonly ISerialPortService _serial;
     private readonly IWeighingService _weighingService;
+    private readonly IArchiveQueryService _archive;
     private readonly IUserService _userService;
     private readonly AwsDbContext _db;
     private readonly ILogService _log;
     private readonly DispatcherTimer _statsTimer;
     private readonly Dispatcher _dispatcher;
+
+    private static readonly SKColor[] _categoryColors =
+    [
+        new(0x42, 0xA5, 0xF5),
+        new(0xFF, 0xB7, 0x4D),
+        new(0xAB, 0x47, 0xBC),
+        new(0x26, 0xC6, 0xDA),
+        new(0xEF, 0x53, 0x50),
+        new(0xFF, 0xEE, 0x58),
+        new(0xEC, 0x40, 0x7A),
+        new(0x9C, 0xCC, 0x65),
+    ];
 
     // ── 实时重量 ──────────────────────────────────────────
     private double _currentWeight;
@@ -124,11 +137,8 @@ public class WeighingViewModel : BindableBase, INavigationAware
         private set => SetProperty(ref _todayVehicleCount, value);
     }
 
-    // ── LiveCharts 折线图（今日每小时净重） ──────────────────
-    private readonly ObservableValue[] _hourlyValues =
-        Enumerable.Range(0, 24).Select(_ => new ObservableValue(0)).ToArray();
-
-    public ISeries[] HourlySeries { get; }
+    // ── LiveCharts 折线图（今日每小时净重，按品类动态） ───────
+    public ObservableCollection<ISeries> HourlySeries { get; } = [];
     public Axis[] XAxes { get; }
     public Axis[] YAxes { get; }
 
@@ -168,36 +178,27 @@ public class WeighingViewModel : BindableBase, INavigationAware
     public WeighingViewModel(
         ISerialPortService serial,
         IWeighingService weighingService,
+        IArchiveQueryService archive,
         IUserService userService,
         AwsDbContext db,
         ILogService log)
     {
         _serial = serial;
         _weighingService = weighingService;
+        _archive = archive;
         _userService = userService;
         _db = db;
         _log = log;
         _dispatcher = Application.Current.Dispatcher;
 
-        HourlySeries =
-        [
-            new LineSeries<ObservableValue>
-            {
-                Values = _hourlyValues,
-                Name = "净重 kg",
-                Fill = null,
-                GeometrySize = 6,
-                Stroke = new SolidColorPaint(new SKColor(0x42, 0xA5, 0xF5), 2),
-                GeometryFill = new SolidColorPaint(new SKColor(0x42, 0xA5, 0xF5)),
-                GeometryStroke = null,
-            }
-        ];
-
         XAxes =
         [
             new Axis
             {
-                Labels = Enumerable.Range(0, 24).Select(h => $"{h}时").ToArray(),
+                Labeler = v => $"{(int)v}时",
+                MinStep = 1,
+                MinLimit = 0,
+                MaxLimit = 23,
                 TextSize = 9,
                 LabelsPaint = AWS.UI.Charts.ChartPaints.Text(),
             }
@@ -272,11 +273,79 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     private async Task RefreshStatsAsync()
     {
-        var hourly = await _weighingService.GetTodayHourlyNetWeightAsync();
-        var (total, count) = await _weighingService.GetTodayStatsAsync();
+        var today = DateTime.Today;
+        var records = await _archive.QueryAsync(today.Year, today, today.AddDays(1).AddSeconds(-1));
+        var (total, count, _) = await _weighingService.GetTodayStatsAsync();
+
+        // 品类折线：每笔记录一个点，X = 实际时分（小数小时）
+        var categoryPoints = records
+            .GroupBy(r => r.GoodsName)
+            .OrderBy(g => g.Key)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                {
+                    double cat = 0;
+                    return g.OrderBy(r => r.ArchivedAt)
+                            .Select(r =>
+                            {
+                                cat += r.NetWeight;
+                                return new ObservablePoint(
+                                    r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
+                                    cat);
+                            })
+                            .ToArray();
+                });
+
+        // 汇总折线：每笔记录一个点，Y = 到该时刻的累计净重
+        double running = 0;
+        var summaryPoints = records
+            .OrderBy(r => r.ArchivedAt)
+            .Select(r =>
+            {
+                running += r.NetWeight;
+                return new ObservablePoint(
+                    r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
+                    running);
+            })
+            .ToArray();
+
         _dispatcher.Invoke(() =>
         {
-            for (int h = 0; h < 24; h++) _hourlyValues[h].Value = hourly[h];
+            HourlySeries.Clear();
+            int ci = 0;
+            foreach (var (goodsName, pts) in categoryPoints)
+            {
+                var clr = _categoryColors[ci++ % _categoryColors.Length];
+                HourlySeries.Add(new LineSeries<ObservablePoint>
+                {
+                    Values = pts,
+                    Name = goodsName,
+                    Fill = null,
+                    GeometrySize = 8,
+                    Stroke = new SolidColorPaint(clr, 2),
+                    GeometryFill = new SolidColorPaint(clr),
+                    GeometryStroke = null,
+                    LineSmoothness = 0,
+                });
+            }
+            HourlySeries.Add(new LineSeries<ObservablePoint>
+            {
+                Values = summaryPoints,
+                Name = "汇总",
+                Fill = null,
+                GeometrySize = 6,
+                Stroke = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0), 2.5f),
+                GeometryFill = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0)),
+                GeometryStroke = null,
+                LineSmoothness = 0,
+            });
+
+            XAxes[0].MinLimit = null;
+            XAxes[0].MaxLimit = null;
+            YAxes[0].MinLimit = null;
+            YAxes[0].MaxLimit = null;
+
             TodayTotalWeight = $"{total:N0} kg";
             TodayVehicleCount = count;
         });

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
     xmlns:prism="http://prismlibrary.com/"
+    xmlns:enums="clr-namespace:AWS.Core.Enums;assembly=AWS.Core"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
 
@@ -103,6 +104,20 @@
                                     Width="*"
                                     Binding="{Binding Name}"
                                     Header="客户名称" />
+                                <DataGridTemplateColumn Width="80" Header="类型">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock VerticalAlignment="Center" Margin="4,0"
+                                                       Text="{Binding Type, Converter={StaticResource CustomerTypeConverter}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <ComboBox SelectedValue="{Binding Type, UpdateSourceTrigger=PropertyChanged}"
+                                                      ItemsSource="{Binding Source={StaticResource CustomerTypeValues}}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn
                                     Width="140"
                                     Binding="{Binding Phone}"

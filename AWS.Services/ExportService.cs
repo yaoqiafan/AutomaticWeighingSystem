@@ -56,4 +56,69 @@ public class ExportService : IExportService
             workbook.Write(fs);
         });
     }
+
+    public async Task ExportDeliveryToExcelAsync(IEnumerable<DeliveryRecord> records, string filePath)
+    {
+        await Task.Run(() =>
+        {
+            var workbook = new XSSFWorkbook();
+            var sheet = workbook.CreateSheet("送货记录");
+
+            var headerStyle = workbook.CreateCellStyle();
+            var headerFont = workbook.CreateFont();
+            headerFont.IsBold = true;
+            headerStyle.SetFont(headerFont);
+
+            // 每张送货单按明细行展开（多品类各占一行）
+            string[] headers = ["送货单号", "客户名称", "货物名称", "重量(kg)",
+                "单价(元/kg)", "金额(元)", "操作员", "送货时间", "备注"];
+
+            var headerRow = sheet.CreateRow(0);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = headerRow.CreateCell(i);
+                cell.SetCellValue(headers[i]);
+                cell.CellStyle = headerStyle;
+                sheet.SetColumnWidth(i, 18 * 256);
+            }
+
+            int rowIdx = 1;
+            foreach (var r in records)
+            {
+                if (r.Items.Count == 0)
+                {
+                    // 无明细时写一行汇总
+                    var row = sheet.CreateRow(rowIdx++);
+                    row.CreateCell(0).SetCellValue(r.TicketNo);
+                    row.CreateCell(1).SetCellValue(r.CustomerName);
+                    row.CreateCell(2).SetCellValue("—");
+                    row.CreateCell(3).SetCellValue(r.TotalWeight);
+                    row.CreateCell(4).SetCellValue("");
+                    row.CreateCell(5).SetCellValue(r.TotalAmount ?? 0);
+                    row.CreateCell(6).SetCellValue(r.OperatorName);
+                    row.CreateCell(7).SetCellValue(r.DeliveryTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                    row.CreateCell(8).SetCellValue(r.Remark ?? "");
+                }
+                else
+                {
+                    foreach (var item in r.Items)
+                    {
+                        var row = sheet.CreateRow(rowIdx++);
+                        row.CreateCell(0).SetCellValue(r.TicketNo);
+                        row.CreateCell(1).SetCellValue(r.CustomerName);
+                        row.CreateCell(2).SetCellValue(item.GoodsName);
+                        row.CreateCell(3).SetCellValue(item.Weight);
+                        row.CreateCell(4).SetCellValue(item.PricePerUnit ?? 0);
+                        row.CreateCell(5).SetCellValue(item.Amount ?? 0);
+                        row.CreateCell(6).SetCellValue(r.OperatorName);
+                        row.CreateCell(7).SetCellValue(r.DeliveryTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                        row.CreateCell(8).SetCellValue(r.Remark ?? "");
+                    }
+                }
+            }
+
+            using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            workbook.Write(fs);
+        });
+    }
 }

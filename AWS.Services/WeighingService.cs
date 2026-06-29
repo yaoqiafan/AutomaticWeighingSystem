@@ -162,12 +162,12 @@ public class WeighingService : IWeighingService
         return result;
     }
 
-    public async Task<(double TotalWeight, int Count)> GetTodayStatsAsync()
+    public async Task<(double TotalWeight, int Count, double TotalAmount)> GetTodayStatsAsync()
     {
         var today = DateTime.Today;
         var years = await _archive.GetAvailableYearsAsync();
-        if (!years.Contains(today.Year)) return (0, 0);
+        if (!years.Contains(today.Year)) return (0, 0, 0);
         var records = await _archive.QueryAsync(today.Year, today, today.AddDays(1));
-        return (records.Sum(r => r.NetWeight), records.Count);
+        return (records.Sum(r => r.NetWeight), records.Count, records.Sum(r => r.TotalAmount ?? 0));
     }
 }

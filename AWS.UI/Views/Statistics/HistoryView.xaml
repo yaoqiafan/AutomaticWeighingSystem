@@ -6,92 +6,121 @@
     xmlns:prism="http://prismlibrary.com/"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
+    <UserControl.Resources>
+        <Style x:Key="TypeBtn" TargetType="Button">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <!--  筛选栏  -->
-            <RowDefinition Height="*" />
-            <!--  数据表  -->
+            <RowDefinition Height="Auto" />   <!-- 筛选栏 -->
+            <RowDefinition Height="*" />      <!-- 数据表 -->
         </Grid.RowDefinitions>
 
-        <!--  ═══ 筛选栏 ═══  -->
-        <Border
-            Grid.Row="0"
-            Margin="0,0,0,8"
-            Padding="10,8"
-            Background="{DynamicResource RegionBrush}"
-            CornerRadius="8">
+        <!-- ═══ 筛选栏 ═══ -->
+        <Border Grid.Row="0" Margin="0,0,0,8" Padding="10,8"
+                Background="{DynamicResource RegionBrush}" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <!--  DateTimeSelector（年份由日期范围隐含）  -->
                     <RowDefinition Height="6" />
                     <RowDefinition Height="Auto" />
-                    <!--  其余筛选 + 按钮  -->
+                    <RowDefinition Height="6" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--  行 0：DateTimeSelector 全宽，含当天/近一周/近一月快选  -->
-                <pf:DateTimeSelector
-                    Grid.Row="0"
+                <!-- 类型切换 -->
+                <Border Grid.Row="0" CornerRadius="6" BorderThickness="1"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        Background="{DynamicResource BackgroundBrush}"
+                        HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding SwitchToWeighingCommand}" Content="收货记录">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource TypeBtn}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsWeighingMode}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Command="{Binding SwitchToDeliveryCommand}" Content="送货记录">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource TypeBtn}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- 日期选择器 -->
+                <pf:DateTimeSelector Grid.Row="2"
                     Background="{DynamicResource BackgroundBrush}"
                     BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CheckBoxHeight="30"
-                    EndTime="{Binding DateTo, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                    ShowCheckBox="False"
+                    BorderThickness="1" CheckBoxHeight="30" ShowCheckBox="False"
                     StartTime="{Binding DateFrom, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                    EndTime="{Binding DateTo, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                     Style="{StaticResource DateTimeSelectorCardHorizontalStyle}" />
 
-                <!--  行 2：车牌 / 客户 / 货物下拉 + 操作按钮  -->
-                <Grid Grid.Row="2">
+                <!-- 筛选条件 + 按钮 -->
+                <Grid Grid.Row="4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <WrapPanel
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="车牌" />
-                        <TextBox
-                            Width="90"
-                            Height="28"
-                            Margin="0,0,12,0"
-                            Padding="6,0"
-                            VerticalContentAlignment="Center"
-                            Text="{Binding VehiclePlateFilter, UpdateSourceTrigger=PropertyChanged}" />
+                    <WrapPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <!-- 车牌（仅收货模式可见） -->
+                        <TextBlock Text="车牌" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBox Width="90" Height="28" Margin="0,0,12,0" Padding="6,0"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding VehiclePlateFilter, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
 
-                        <TextBlock
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="客户" />
-                        <TextBox
-                            Width="90"
-                            Height="28"
-                            Margin="0,0,12,0"
-                            Padding="6,0"
-                            VerticalContentAlignment="Center"
-                            Text="{Binding CustomerNameFilter, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="客户" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <TextBox Width="90" Height="28" Margin="0,0,12,0" Padding="6,0"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding CustomerNameFilter, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBlock
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="货物" />
-                        <ComboBox
-                            Width="110"
-                            Height="28"
-                            ItemsSource="{Binding AvailableGoods}"
-                            SelectedItem="{Binding SelectedGoods}">
+                        <TextBlock Text="货物" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <ComboBox Width="110" Height="28" ItemsSource="{Binding AvailableGoods}"
+                                  SelectedItem="{Binding SelectedGoods}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ., TargetNullValue='全部'}" />
@@ -100,53 +129,27 @@
                         </ComboBox>
                     </WrapPanel>
 
-                    <StackPanel
-                        Grid.Column="1"
-                        Margin="12,0,0,0"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <Button
-                            Width="64"
-                            Height="30"
-                            Margin="0,0,6,0"
-                            Command="{Binding QueryCommand}"
-                            Content="查询" />
-                        <Button
-                            Width="64"
-                            Height="30"
-                            Margin="0,0,6,0"
-                            Background="Transparent"
-                            BorderThickness="1"
-                            Command="{Binding ResetFilterCommand}"
-                            Content="重置" />
-                        <Button
-                            Width="80"
-                            Height="30"
-                            Margin="0,0,6,0"
-                            Background="#1565C0"
-                            BorderThickness="0"
-                            Command="{Binding ShowAllChartCommand}"
-                            Content="绘制图表"
-                            Foreground="White" />
-                        <Button
-                            Width="96"
-                            Height="30"
-                            Background="#4CAF50"
-                            BorderThickness="0"
-                            Command="{Binding ExportCommand}"
-                            Content="导出 Excel"
-                            Foreground="White" />
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Button Width="64" Height="30" Margin="0,0,6,0"
+                                Command="{Binding QueryCommand}" Content="查询" />
+                        <Button Width="64" Height="30" Margin="0,0,6,0"
+                                Background="Transparent" BorderThickness="1"
+                                Command="{Binding ResetFilterCommand}" Content="重置" />
+                        <!-- 绘制图表（仅收货模式） -->
+                        <Button Width="80" Height="30" Margin="0,0,6,0"
+                                Command="{Binding ShowAllChartCommand}"
+                                Content="绘制图表"
+                                Visibility="{Binding IsWeighingMode, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Button Width="96" Height="30" Background="#4CAF50" BorderThickness="0"
+                                Command="{Binding ExportCommand}"
+                                Content="导出 Excel" Foreground="White" />
                     </StackPanel>
                 </Grid>
             </Grid>
         </Border>
 
-        <!--  ═══ 档案明细表 ═══  -->
-        <Border
-            Grid.Row="1"
-            Padding="8"
-            Background="{DynamicResource RegionBrush}"
-            CornerRadius="8">
+        <!-- ═══ 数据表 ═══ -->
+        <Border Grid.Row="1" Padding="8" Background="{DynamicResource RegionBrush}" CornerRadius="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -154,218 +157,181 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!--  表头行  -->
+                <!-- 表头：标题 + 汇总 + 删除 -->
                 <DockPanel Grid.Row="0" Margin="2,0,2,6">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                        <pf:PackIcon
-                            Width="15"
-                            Height="15"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Kind="FileDocumentOutline" />
-                        <TextBlock
-                            Margin="5,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="{DynamicResource FontSize.Body.Standard}"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Text="过磅档案明细" />
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}">
+                    <Button Width="72" Height="26" DockPanel.Dock="Right"
+                            Background="Transparent" BorderThickness="1"
+                            Foreground="#F44336">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Content" Value="删除选中" />
+                                <Setter Property="Command" Value="{Binding DeleteWeighingCommand}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                        <Setter Property="Command" Value="{Binding DeleteDeliveryCommand}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <pf:PackIcon Width="14" Height="14" VerticalAlignment="Center"
+                                     Foreground="{DynamicResource PrimaryBrush}" Kind="FileDocumentOutline" />
+                        <TextBlock Margin="5,0,0,0" VerticalAlignment="Center"
+                                   FontSize="{DynamicResource FontSize.Body.Standard}"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"
+                                   Text="{Binding TableTitle}" />
+                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}">
                             <Run Text="共 " /><Run Text="{Binding RecordCount, Mode=OneWay}" /><Run Text=" 条" />
                         </TextBlock>
-                        <TextBlock
-                            Margin="10,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}">
-                            <Run Text="净重合计 " /><Run Text="{Binding TotalNetWeight, Mode=OneWay, StringFormat=F1}" /><Run Text=" kg" />
+                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="{Binding WeightSummaryLabel, Mode=OneWay}" />
+                            <Run Text=" " />
+                            <Run Text="{Binding TotalWeight, Mode=OneWay, StringFormat=F1}" />
+                            <Run Text=" kg" />
+                        </TextBlock>
+                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}">
+                            <Run Text="金额合计 ¥ " /><Run Text="{Binding TotalAmount, Mode=OneWay, StringFormat=N2}" />
                         </TextBlock>
                     </StackPanel>
-                    <Button
-                        Width="72"
-                        Height="26"
-                        HorizontalAlignment="Right"
-                        Background="Transparent"
-                        BorderThickness="1"
-                        Command="{Binding DeleteCommand}"
-                        Content="删除选中"
-                        DockPanel.Dock="Right"
-                        Foreground="#F44336" />
                 </DockPanel>
 
-                <!--  DataGrid（多选 + 右键菜单）  -->
-                <DataGrid
-                    x:Name="RecordsGrid"
-                    Grid.Row="1"
-                    AutoGenerateColumns="False"
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    CanUserAddRows="False"
-                    CanUserDeleteRows="False"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding Records}"
-                    PreviewMouseRightButtonDown="RecordsGrid_PreviewMouseRightButtonDown"
-                    SelectionChanged="RecordsGrid_SelectionChanged"
-                    SelectionMode="Extended">
-
-                    <!--  右键菜单：DataContext 使用 PlacementTarget.DataContext 访问 VM  -->
+                <!-- 收货 DataGrid -->
+                <DataGrid x:Name="WeighingGrid" Grid.Row="1"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          ItemsSource="{Binding WeighingRecords}"
+                          SelectionChanged="WeighingGrid_SelectionChanged"
+                          SelectionMode="Extended">
+                    <DataGrid.Style>
+                        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid.Small}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Style>
                     <DataGrid.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem
-                                FontSize="11"
-                                FontWeight="SemiBold"
-                                Header="绘制图表（选中 ≥ 2 条）"
-                                IsEnabled="False" />
+                            <MenuItem FontSize="11" Header="绘制图表（选中行）" IsEnabled="False" FontWeight="SemiBold" />
                             <Separator />
-                            <MenuItem
-                                Command="{Binding ShowChartCommand}"
-                                CommandParameter="0"
-                                Header="各客户净重排名">
-                                <MenuItem.Icon>
-                                    <pf:PackIcon
-                                        Width="14"
-                                        Height="14"
-                                        Kind="ChartBar" />
-                                </MenuItem.Icon>
+                            <MenuItem Command="{Binding ShowChartCommand}" CommandParameter="0" Header="各客户净重排名">
+                                <MenuItem.Icon><pf:PackIcon Width="14" Height="14" Kind="ChartBar" /></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem
-                                Command="{Binding ShowChartCommand}"
-                                CommandParameter="1"
-                                Header="货物类型净重占比">
-                                <MenuItem.Icon>
-                                    <pf:PackIcon
-                                        Width="14"
-                                        Height="14"
-                                        Kind="ChartPie" />
-                                </MenuItem.Icon>
+                            <MenuItem Command="{Binding ShowChartCommand}" CommandParameter="1" Header="货物类型净重占比">
+                                <MenuItem.Icon><pf:PackIcon Width="14" Height="14" Kind="ChartPie" /></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem
-                                Command="{Binding ShowChartCommand}"
-                                CommandParameter="2"
-                                Header="净重日趋势">
-                                <MenuItem.Icon>
-                                    <pf:PackIcon
-                                        Width="14"
-                                        Height="14"
-                                        Kind="ChartLine" />
-                                </MenuItem.Icon>
+                            <MenuItem Command="{Binding ShowChartCommand}" CommandParameter="2" Header="净重日趋势">
+                                <MenuItem.Icon><pf:PackIcon Width="14" Height="14" Kind="ChartLine" /></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem
-                                Command="{Binding ShowChartCommand}"
-                                CommandParameter="3"
-                                Header="各车辆净重排名">
-                                <MenuItem.Icon>
-                                    <pf:PackIcon
-                                        Width="14"
-                                        Height="14"
-                                        Kind="TruckFast" />
-                                </MenuItem.Icon>
+                            <MenuItem Command="{Binding ShowChartCommand}" CommandParameter="3" Header="各车辆净重排名">
+                                <MenuItem.Icon><pf:PackIcon Width="14" Height="14" Kind="TruckFast" /></MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
-
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style BasedOn="{StaticResource DataGridColumnHeaderStyle}" TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}" />
-                            <Setter Property="FontWeight" Value="SemiBold" />
-                            <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            <Setter Property="Padding" Value="6,0" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                            <Setter Property="BorderThickness" Value="0,0,1,1" />
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-                    <DataGrid.CellStyle>
-                        <Style BasedOn="{StaticResource DataGridCellStyle}" TargetType="DataGridCell">
-                            <Setter Property="Padding" Value="6,0" />
-                            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                        </Style>
-                    </DataGrid.CellStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding TicketNo}"
-                            Header="磅单号" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding VehiclePlate}"
-                            Header="车牌" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding CustomerName}"
-                            Header="客户" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding GoodsName}"
-                            Header="货物" />
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding GrossWeight, StringFormat=F1}"
-                            Header="毛重(kg)" />
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding TareWeight, StringFormat=F1}"
-                            Header="皮重(kg)" />
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding NetWeight, StringFormat=F1}"
-                            Header="净重(kg)" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding PricePerUnit, StringFormat=F2}"
-                            Header="单价" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding TotalAmount, StringFormat=F2}"
-                            Header="金额" />
-                        <DataGridTextColumn
-                            Width="auto"
-                            Binding="{Binding OperatorName}"
-                            Header="操作员" />
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding ArchivedAt, StringFormat=yyyy-MM-dd HH:mm}"
-                            Header="存档时间" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding TicketNo}" Header="磅单号" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding VehiclePlate}" Header="车牌" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding CustomerName}" Header="客户" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding GoodsName}" Header="货物" />
+                        <DataGridTextColumn Width="*" Binding="{Binding GrossWeight, StringFormat=F1}" Header="毛重(kg)" />
+                        <DataGridTextColumn Width="*" Binding="{Binding TareWeight, StringFormat=F1}" Header="皮重(kg)" />
+                        <DataGridTextColumn Width="*" Binding="{Binding NetWeight, StringFormat=F1}" Header="净重(kg)" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding PricePerUnit, StringFormat=F2}" Header="单价" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding TotalAmount, StringFormat=F2}" Header="支出金额" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding OperatorName}" Header="操作员" />
+                        <DataGridTextColumn Width="*" Binding="{Binding ArchivedAt, StringFormat=yyyy-MM-dd HH:mm}" Header="存档时间" />
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!--  分页条  -->
+                <!-- 送货 DataGrid -->
+                <DataGrid x:Name="DeliveryGrid" Grid.Row="1"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          ItemsSource="{Binding DeliveryRecords}"
+                          SelectionChanged="DeliveryGrid_SelectionChanged"
+                          SelectionMode="Extended">
+                    <DataGrid.Style>
+                        <Style TargetType="DataGrid" BasedOn="{StaticResource DataGrid.Small}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsWeighingMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Style>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="Auto" Binding="{Binding TicketNo}" Header="送货单号" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding CustomerName}" Header="客户" />
+                        <DataGridTextColumn Width="*" Binding="{Binding GoodsSummary}" Header="货物" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding TotalWeight, StringFormat=F1}" Header="总重(kg)" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding TotalAmount, StringFormat=F2}" Header="收入金额" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding OperatorName}" Header="操作员" />
+                        <DataGridTextColumn Width="*" Binding="{Binding DeliveryTime, StringFormat=yyyy-MM-dd HH:mm}" Header="送货时间" />
+                        <DataGridTextColumn Width="Auto" Binding="{Binding Remark}" Header="备注" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 分页条 -->
                 <DockPanel Grid.Row="2" Margin="0,4,0,0">
-                    <StackPanel
-                        Margin="0,0,4,0"
-                        VerticalAlignment="Center"
-                        DockPanel.Dock="Right"
-                        Orientation="Horizontal">
-                        <TextBlock
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="每页" />
-                        <ComboBox
-                            Width="60"
-                            Height="24"
-                            FontSize="11"
-                            ItemsSource="{Binding AvailablePageSizes}"
-                            SelectedItem="{Binding PageSize}" />
-                        <TextBlock
-                            Margin="4,0,0,0"
-                            VerticalAlignment="Center"
-                            FontSize="11"
-                            Foreground="{DynamicResource SecondaryTextBrush}"
-                            Text="条" />
+                    <!-- 收货分页 -->
+                    <StackPanel DockPanel.Dock="Right" Margin="0,0,4,0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" Text="每页" />
+                        <ComboBox Width="60" Height="24" FontSize="11"
+                                  ItemsSource="{Binding AvailablePageSizes}" SelectedItem="{Binding PageSize}" />
+                        <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" Text="条" />
                     </StackPanel>
-                    <pf:Pagination Height="{DynamicResource DefaultControlHeight}" IsJumpEnabled="True" Margin="3"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        MaxPageCount="{Binding TotalPageCount}"
-                        PageIndex="{Binding PageIndex, Mode=TwoWay}" />
+                    <!-- 送货分页 -->
+                    <StackPanel DockPanel.Dock="Right" Margin="0,0,4,0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsWeighingMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Margin="0,0,4,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" Text="每页" />
+                        <ComboBox Width="60" Height="24" FontSize="11"
+                                  ItemsSource="{Binding AvailablePageSizes}" SelectedItem="{Binding DeliveryPageSize}" />
+                        <TextBlock Margin="4,0,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" Text="条" />
+                    </StackPanel>
+
+                    <pf:Pagination Height="{DynamicResource DefaultControlHeight}" Margin="3" IsJumpEnabled="True"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <pf:Pagination.Style>
+                            <Style TargetType="pf:Pagination">
+                                <Setter Property="DataCountPerPage" Value="{Binding PageSize}" />
+                                <Setter Property="MaxPageCount" Value="{Binding TotalPageCount}" />
+                                <Setter Property="PageIndex" Value="{Binding PageIndex, Mode=TwoWay}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDeliveryMode}" Value="True">
+                                        <Setter Property="DataCountPerPage" Value="{Binding DeliveryPageSize}" />
+                                        <Setter Property="MaxPageCount" Value="{Binding DeliveryTotalPageCount}" />
+                                        <Setter Property="PageIndex" Value="{Binding DeliveryPageIndex, Mode=TwoWay}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </pf:Pagination.Style>
+                    </pf:Pagination>
                 </DockPanel>
             </Grid>
         </Border>
