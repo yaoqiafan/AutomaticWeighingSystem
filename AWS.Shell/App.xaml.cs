@@ -51,13 +51,10 @@ public partial class App : PrismApplication
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
         // ── 启动屏：在 Prism 框架启动前完成耗时初始化 ──────────────────
-        Splash? splash = null;
-        splash = new Splash
+        SplashWindow? splash = null;
+        splash = new SplashWindow
         {
-            WelcomeText       = "绿鑫资源称重系统",
-            VersionNumber     = "v1.0",
-            WelcomeText_small = "正在启动，请稍候...",
-            LoadingAction     = async () =>
+            LoadingAction = async () =>
             {
                 // 1. 数据库预初始化（建表、Schema 迁移、默认数据）
                 Dispatcher.Invoke(() => splash!.UpdateMessage("正在初始化数据库...", MsgType.Info));
