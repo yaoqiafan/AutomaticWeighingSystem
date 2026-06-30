@@ -83,8 +83,8 @@
             <TextBlock Grid.Column="2" Style="{StaticResource ColHeader}">
                 <Run Text="重量（" /><Run Text="{Binding WeightUnit, Mode=OneWay}" /><Run Text="）" />
             </TextBlock>
-            <TextBlock Grid.Column="4" Text="单价（元/kg）" Style="{StaticResource ColHeader}" />
-            <TextBlock Grid.Column="6" Text="金额（元）" Style="{StaticResource ColHeader}" />
+            <TextBlock Grid.Column="4" Text="金额（元）" Style="{StaticResource ColHeader}" />
+            <TextBlock Grid.Column="6" Text="单价（元/kg）" Style="{StaticResource ColHeader}" />
         </Grid>
 
         <!-- 品类明细行列表 -->
@@ -111,14 +111,14 @@
                             <!-- 重量 -->
                             <TextBox Grid.Column="2" Height="30" Padding="6,0" VerticalContentAlignment="Center"
                                      Text="{Binding WeightText, UpdateSourceTrigger=PropertyChanged}" />
-                            <!-- 单价 -->
+                            <!-- 金额（用户录入） -->
                             <TextBox Grid.Column="4" Height="30" Padding="6,0" VerticalContentAlignment="Center"
-                                     Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" />
-                            <!-- 金额（只读） -->
+                                     Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
+                            <!-- 单价（反算只读：金额÷重量） -->
                             <Border Grid.Column="6" Height="30" Background="{DynamicResource RegionBrush}"
                                     CornerRadius="4" Padding="6,0">
                                 <TextBlock VerticalAlignment="Center" FontSize="12"
-                                           Text="{Binding Amount, StringFormat=N2, TargetNullValue='—'}" />
+                                           Text="{Binding UnitPrice, StringFormat=N4, TargetNullValue='—'}" />
                             </Border>
                             <!-- 删除 -->
                             <Button Grid.Column="7" Width="24" Height="24" Content="×"

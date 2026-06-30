@@ -17,13 +17,15 @@
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />   <!-- 磅单号 -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />   <!-- 可编辑字段 -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />   <!-- 备注 -->
+            <RowDefinition Height="12" />
+            <RowDefinition Height="Auto" />   <!-- 首次称重图片 -->
             <RowDefinition Height="16" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />   <!-- 按钮 -->
         </Grid.RowDefinitions>
 
         <!-- 磅单号（只读） -->
@@ -79,8 +81,41 @@
                      Height="32" Padding="8,0" FontSize="13" VerticalContentAlignment="Center" />
         </StackPanel>
 
+        <!-- 首次称重图片 -->
+        <StackPanel Grid.Row="6">
+            <TextBlock Text="首次称重图片" Style="{StaticResource LabelStyle}" Margin="0,0,0,6" />
+            <!-- 有图片：ImageViewer -->
+            <pf:ImageViewer Height="220" ImgPath="{Binding QueueItem.FirstWeighImagePath}">
+                <pf:ImageViewer.Style>
+                    <Style TargetType="pf:ImageViewer">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding QueueItem.FirstWeighImagePath}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </pf:ImageViewer.Style>
+            </pf:ImageViewer>
+            <!-- 无图片：占位提示 -->
+            <Border Height="220" Background="{DynamicResource RegionBrush}" CornerRadius="6">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding QueueItem.FirstWeighImagePath}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="（无图片）" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13" />
+            </Border>
+        </StackPanel>
+
         <!-- 操作按钮 -->
-        <Grid Grid.Row="6">
+        <Grid Grid.Row="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="12" />

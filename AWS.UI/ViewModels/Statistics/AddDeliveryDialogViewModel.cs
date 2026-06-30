@@ -19,10 +19,8 @@ public class DeliveryItemLine : BindableBase
         set
         {
             SetProperty(ref _selectedGoods, value);
-            // 自动填充单价（仅在当前单价为空时）
-            if (value?.PricePerUnit.HasValue == true && string.IsNullOrEmpty(PriceText))
-                PriceText = value.PricePerUnit.Value.ToString("F2");
-            RecalcAmount();
+            // 选择类别后不自动填充单价；单价由 重量÷金额 反算
+            Recalc();
             Changed?.Invoke();
         }
     }
@@ -31,16 +29,22 @@ public class DeliveryItemLine : BindableBase
     public string WeightText
     {
         get => _weightText;
-        set { SetProperty(ref _weightText, value); RecalcAmount(); Changed?.Invoke(); }
+        set { SetProperty(ref _weightText, value); Recalc(); Changed?.Invoke(); }
     }
 
-    private string _priceText = string.Empty;
-    public string PriceText
+    // 用户直接录入金额
+    private string _amountText = string.Empty;
+    public string AmountText
     {
-        get => _priceText;
-        set { SetProperty(ref _priceText, value); RecalcAmount(); Changed?.Invoke(); }
+        get => _amountText;
+        set { SetProperty(ref _amountText, value); Recalc(); Changed?.Invoke(); }
     }
 
+    // 由 金额 / 重量 反算的单价（只读显示）
+    private double? _unitPrice;
+    public double? UnitPrice { get => _unitPrice; private set => SetProperty(ref _unitPrice, value); }
+
+    // 解析后的金额（供父 ViewModel 汇总使用）
     private double? _amount;
     public double? Amount { get => _amount; private set => SetProperty(ref _amount, value); }
 
@@ -56,14 +60,16 @@ public class DeliveryItemLine : BindableBase
 
     public Action? Changed { get; set; }
 
-    private void RecalcAmount()
+    private void Recalc()
     {
-        if (double.TryParse(WeightText, out double w) && w > 0
-            && double.TryParse(PriceText, out double p) && p > 0)
-            Amount = Math.Round(w * p, 2);
-        else
-            Amount = null;
+        bool hasWeight = double.TryParse(WeightText, out double w) && w > 0;
+        bool hasAmount = double.TryParse(AmountText, out double a) && a > 0;
+
+        Amount    = hasAmount ? a : null;
+        UnitPrice = (hasWeight && hasAmount) ? Math.Round(a / w, 4) : null;
+
         RaisePropertyChanged(nameof(Amount));
+        RaisePropertyChanged(nameof(UnitPrice));
         RaisePropertyChanged(nameof(IsValid));
     }
 }
@@ -194,15 +200,14 @@ public class AddDeliveryDialogViewModel : BindableBase
             Remark = string.IsNullOrWhiteSpace(Remark) ? null : Remark.Trim(),
             Items = ItemLines.Select(l =>
             {
-                double.TryParse(l.PriceText, out double price);
                 double wKg = l.WeightKg(WeightUnit);
                 return new DeliveryItem
                 {
                     GoodsCategoryId = l.SelectedGoods!.Id,
                     GoodsName       = l.SelectedGoods.Name,
                     Weight          = wKg,
-                    PricePerUnit    = price > 0 ? price : null,
-                    Amount          = price > 0 ? Math.Round(wKg * price, 2) : null
+                    PricePerUnit    = l.UnitPrice,
+                    Amount          = l.Amount
                 };
             }).ToList()
         };
