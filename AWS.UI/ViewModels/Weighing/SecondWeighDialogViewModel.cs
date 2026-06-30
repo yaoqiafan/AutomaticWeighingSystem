@@ -2,7 +2,6 @@ using AWS.Core.Entities;
 using AWS.Core.Interfaces;
 using Prism.Commands;
 using Prism.Mvvm;
-using System.Windows;
 using System.Windows.Threading;
 
 namespace AWS.UI.ViewModels.Weighing;
@@ -10,7 +9,10 @@ namespace AWS.UI.ViewModels.Weighing;
 public class SecondWeighDialogViewModel : BindableBase
 {
     private readonly ISerialPortService _serial;
-    private readonly Func<long, double, double?, Task> _archiveFunc;
+    private readonly ICameraService _camera;
+    private readonly IImageStorageService _imageStorage;
+    private readonly int _captureChannel;
+    private readonly Func<long, double, double?, string?, Task> _archiveFunc;
     private readonly Dispatcher _dispatcher;
     private readonly ILogService _log;
 
@@ -84,11 +86,17 @@ public class SecondWeighDialogViewModel : BindableBase
         WeighingQueue item,
         double defaultPrice,
         ISerialPortService serial,
-        Func<long, double, double?, Task> archiveFunc,
+        ICameraService camera,
+        IImageStorageService imageStorage,
+        int captureChannel,
+        Func<long, double, double?, string?, Task> archiveFunc,
         ILogService log)
     {
         QueueItem = item;
         _serial = serial;
+        _camera = camera;
+        _imageStorage = imageStorage;
+        _captureChannel = captureChannel;
         _archiveFunc = archiveFunc;
         _log = log;
         _priceText = defaultPrice.ToString("F2");
@@ -107,6 +115,9 @@ public class SecondWeighDialogViewModel : BindableBase
 
     private void OnWeightReceived(object? sender, Core.Models.WeightReading reading)
     {
+        // 仅响应二次称重设备或两者通用设备；首重专用设备的数据不在此弹窗显示
+        if (reading.Source == Core.Enums.WeighMode.FirstWeigh) return;
+
         _dispatcher.Invoke(() =>
         {
             CurrentWeight = reading.Value;
@@ -137,7 +148,14 @@ public class SecondWeighDialogViewModel : BindableBase
         double? price = double.TryParse(PriceText, out double p) && p > 0 ? p : null;
         try
         {
-            await _archiveFunc(QueueItem.Id, _capturedSecondWeight.Value, price);
+            string? secondImagePath = null;
+            if (_camera.IsLoggedIn)
+            {
+                var path = _imageStorage.BuildPath(QueueItem.TicketNo, "second");
+                secondImagePath = await _camera.CaptureJpegAsync(_captureChannel, path);
+            }
+
+            await _archiveFunc(QueueItem.Id, _capturedSecondWeight.Value, price, secondImagePath);
             _log.Info($"二次称重存档完成：{QueueItem.TicketNo} 净重 {NetWeight:F1}kg", "二次称重");
             Succeeded = true;
             Detach();
@@ -145,7 +163,6 @@ public class SecondWeighDialogViewModel : BindableBase
         }
         catch (Exception ex)
         {
-            string str = ex.ToString();
             _log.Error($"存档失败：{ex.Message}", "二次称重");
         }
     }

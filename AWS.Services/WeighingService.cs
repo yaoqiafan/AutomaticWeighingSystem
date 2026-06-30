@@ -52,9 +52,10 @@ public class WeighingService : IWeighingService
 
     public async Task<WeighingQueue> CreateInitialEntryAsync(string vehiclePlate,
         string customerName, int? customerId, string goodsName, int? goodsCategoryId,
-        double firstWeight, int operatorId, string operatorName, string? remark = null)
+        double firstWeight, int operatorId, string operatorName,
+        string? remark = null, string? ticketNo = null, string? firstWeighImagePath = null)
     {
-        var ticketNo = await GenerateTicketNoAsync();
+        ticketNo ??= await GenerateTicketNoAsync();
         var entry = new WeighingQueue
         {
             TicketNo = ticketNo,
@@ -69,7 +70,8 @@ public class WeighingService : IWeighingService
             OperatorId = operatorId,
             OperatorName = operatorName,
             CreatedAt = DateTime.Now,
-            Remark = remark
+            Remark = remark,
+            FirstWeighImagePath = firstWeighImagePath
         };
         _context.WeighingQueues.Add(entry);
         await _context.SaveChangesAsync();
@@ -85,7 +87,7 @@ public class WeighingService : IWeighingService
     }
 
     public async Task<WeighingArchiveRecord> ArchiveAsync(long queueId, double secondWeight,
-        double? pricePerUnit = null)
+        double? pricePerUnit = null, string? secondWeighImagePath = null)
     {
         var item = await _context.WeighingQueues.FindAsync(queueId)
             ?? throw new InvalidOperationException($"磅单 {queueId} 不存在");
@@ -111,7 +113,9 @@ public class WeighingService : IWeighingService
             ArchivedAt = DateTime.Now,
             PricePerUnit = pricePerUnit,
             TotalAmount = pricePerUnit.HasValue ? Math.Round(net * pricePerUnit.Value, 2) : null,
-            Remark = item.Remark
+            Remark = item.Remark,
+            FirstWeighImagePath  = item.FirstWeighImagePath,
+            SecondWeighImagePath = secondWeighImagePath
         };
 
         record.Id = await _archive.InsertAsync(record);

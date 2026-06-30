@@ -1,8 +1,10 @@
 using AWS.UI.Views.BasicData;
+using AWS.UI.Views.Camera;
 using AWS.UI.Views.Settings;
 using AWS.UI.Views.Statistics;
 using AWS.UI.Views.Weighing;
 using AWS.UI.ViewModels.BasicData;
+using AWS.UI.ViewModels.Camera;
 using AWS.UI.ViewModels.Settings;
 using AWS.UI.ViewModels.Statistics;
 using AWS.UI.ViewModels.Weighing;
@@ -32,6 +34,9 @@ public class WeighingUIModule : IModule
         containerRegistry.RegisterForNavigation<ParameterManageView, ParameterManageViewModel>(nameof(ParameterManageView));
         containerRegistry.RegisterForNavigation<UserManageView, UserManageViewModel>(nameof(UserManageView));
         containerRegistry.RegisterForNavigation<CloudSyncView, CloudSyncViewModel>(nameof(CloudSyncView));
+
+        // 摄像管理
+        containerRegistry.RegisterForNavigation<CameraManageView, CameraManageViewModel>(nameof(CameraManageView));
 
         // 送货对话框 ViewModel（transient，每次打开新实例）
         containerRegistry.Register<AddDeliveryDialogViewModel>();

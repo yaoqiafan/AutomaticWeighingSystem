@@ -10,17 +10,12 @@ using Prism.Navigation.Regions;
 
 namespace AWS.UI.ViewModels.Settings;
 
-/// <summary>
-/// 参数管理：通过 PropertyGrid 绑定 SystemParameters POCO，集中展示并修改所有系统参数。
-/// 编辑器由控件库按属性类型自动生成；保存时将 POCO 值回写 SystemSettings。
-/// </summary>
 public class ParameterManageViewModel : BindableBase, INavigationAware
 {
     private readonly AwsDbContext _db;
     private readonly ILogService _log;
 
     private SystemParameters _parameters = new();
-    /// <summary>PropertyGrid 绑定的参数对象。</summary>
     public SystemParameters Parameters
     {
         get => _parameters;
@@ -46,17 +41,21 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
     {
         var all = await _db.SystemSettings.ToDictionaryAsync(s => s.Key);
 
-        // 用新实例承载已加载值：引用变化 → PropertyGrid 自动刷新
         Parameters = new SystemParameters
         {
-            CompanyName = Get(all, SettingKeys.CompanyName, "绿鑫资源"),
-            DefaultPricePerKg = double.TryParse(Get(all, SettingKeys.DefaultPricePerKg, "0"), out var price) ? price : 0,
-            SerialPortEnabled = Get(all, SettingKeys.SerialPortEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
-            SerialPortName = Get(all, SettingKeys.SerialPortName, "COM1"),
-            BaudRate = int.TryParse(Get(all, SettingKeys.BaudRate, "9600"), out var baud) ? baud : 9600,
-            SkinType = Enum.TryParse<SkinType>(Get(all, SettingKeys.SkinType, nameof(SkinType.Dark)), out var s) ? s : SkinType.Dark,
-            CloudSyncEnabled = Get(all, SettingKeys.CloudSyncEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
-            CloudSyncUrl = Get(all, SettingKeys.CloudSyncUrl, string.Empty),
+            CompanyName           = Get(all, SettingKeys.CompanyName, "绿鑫资源"),
+            SerialPortConfigsJson = Get(all, SettingKeys.SerialPortConfigs, "[]"),
+            SkinType              = Enum.TryParse<SkinType>(Get(all, SettingKeys.SkinType, nameof(SkinType.Dark)), out var s) ? s : SkinType.Dark,
+            CloudSyncEnabled      = Get(all, SettingKeys.CloudSyncEnabled, "false").Equals("true", StringComparison.OrdinalIgnoreCase),
+            CloudSyncUrl          = Get(all, SettingKeys.CloudSyncUrl, string.Empty),
+            CameraIp              = Get(all, SettingKeys.CameraIp, string.Empty),
+            CameraPort            = int.TryParse(Get(all, SettingKeys.CameraPort, "8000"), out var cp) ? cp : 8000,
+            CameraUser            = Get(all, SettingKeys.CameraUser, "admin"),
+            CameraPassword        = Get(all, SettingKeys.CameraPassword, string.Empty),
+            CaptureChannel        = int.TryParse(Get(all, SettingKeys.CaptureChannel, "1"), out var ch) ? ch : 1,
+            ImageStoragePath      = Get(all, SettingKeys.ImageStoragePath, @"D:\WeighImages\"),
+            DiskWarningPercent    = double.TryParse(Get(all, SettingKeys.DiskWarningPercent, "20"), out var dw) ? dw : 20,
+            AutoDeleteKeepDays    = int.TryParse(Get(all, SettingKeys.AutoDeleteKeepDays, "90"), out var ad) ? ad : 90,
         };
     }
 
@@ -65,21 +64,24 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
         var p = Parameters;
         try
         {
-            Set(SettingKeys.CompanyName, p.CompanyName);
-            Set(SettingKeys.DefaultPricePerKg, p.DefaultPricePerKg.ToString("F4"));
-            Set(SettingKeys.SerialPortEnabled, p.SerialPortEnabled ? "true" : "false");
-            Set(SettingKeys.SerialPortName, p.SerialPortName);
-            Set(SettingKeys.BaudRate, p.BaudRate.ToString());
-            Set(SettingKeys.SkinType, p.SkinType.ToString());
-            Set(SettingKeys.CloudSyncEnabled, p.CloudSyncEnabled ? "true" : "false");
-            Set(SettingKeys.CloudSyncUrl, p.CloudSyncUrl);
+            Set(SettingKeys.CompanyName,        p.CompanyName);
+            Set(SettingKeys.SerialPortConfigs,   p.SerialPortConfigsJson);
+            Set(SettingKeys.SkinType,            p.SkinType.ToString());
+            Set(SettingKeys.CloudSyncEnabled,    p.CloudSyncEnabled ? "true" : "false");
+            Set(SettingKeys.CloudSyncUrl,        p.CloudSyncUrl);
+            Set(SettingKeys.CameraIp,            p.CameraIp);
+            Set(SettingKeys.CameraPort,          p.CameraPort.ToString());
+            Set(SettingKeys.CameraUser,          p.CameraUser);
+            Set(SettingKeys.CameraPassword,      p.CameraPassword);
+            Set(SettingKeys.CaptureChannel,      p.CaptureChannel.ToString());
+            Set(SettingKeys.ImageStoragePath,    p.ImageStoragePath);
+            Set(SettingKeys.DiskWarningPercent,  p.DiskWarningPercent.ToString("F1"));
+            Set(SettingKeys.AutoDeleteKeepDays,  p.AutoDeleteKeepDays.ToString());
 
             _db.SaveChanges();
-
-            // 皮肤即时生效（直接切换应用级资源字典，无需引用 Shell 层）
             ApplySkin(p.SkinType);
 
-            _log.Info($"参数已保存（皮肤：{p.SkinType}，单价：{p.DefaultPricePerKg:F2}，串口：{(p.SerialPortEnabled ? p.SerialPortName : "关闭")}）", "参数管理");
+            _log.Info($"参数已保存（皮肤：{p.SkinType}）", "参数管理");
         }
         catch (Exception ex)
         {
@@ -97,11 +99,6 @@ public class ParameterManageViewModel : BindableBase, INavigationAware
         else _db.SystemSettings.Add(new SystemSetting { Key = key, Value = value });
     }
 
-    /// <summary>
-    /// 直接切换应用级合并字典中的皮肤色彩（slot[0]）。
-    /// 仅替换 Colors 字典，控件主题（slot[1] = Themes/Default.xaml）保持不动，
-    /// 避免触发控件模板重新应用而重置 SideMenu 等运行时状态。
-    /// </summary>
     private static void ApplySkin(SkinType skin)
     {
         var app = System.Windows.Application.Current;

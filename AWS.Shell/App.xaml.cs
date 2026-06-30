@@ -1,5 +1,6 @@
 using AWS.Core.Entities;
 using AWS.Core.Interfaces;
+using AWS.Core.Models;
 using AWS.Data;
 using AWS.Services;
 using AWS.Shell.Views;
@@ -11,6 +12,8 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Navigation.Regions;
 using System.IO;
+using System.Text.Json;
+using System.Timers;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -49,6 +52,10 @@ public partial class App : PrismApplication
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _maintenanceTimer?.Stop();
+        _maintenanceTimer?.Dispose();
+        try { Container.Resolve<ICameraService>().Dispose(); } catch { }
+        AWS.Services.HCNetSDK.HCNetSDKApi.NET_DVR_Cleanup();
         base.OnExit(e);
         if (_isNewInstance)
         {
@@ -56,6 +63,8 @@ public partial class App : PrismApplication
             _appMutex?.Dispose();
         }
     }
+
+    private System.Timers.Timer? _maintenanceTimer;
 
     private static bool RunningInstance()
     {
@@ -114,6 +123,8 @@ public partial class App : PrismApplication
         var log = Container.Resolve<ILogService>();
         log.Info("系统启动", "App");
         InitializeSerialPort();
+        InitializeCamera();
+        StartDiskMaintenanceTimer();
         Container.Resolve<IRegionManager>()
             .RequestNavigate(RegionNames.Main, nameof(AWS.UI.Views.Weighing.WeighingView));
     }
@@ -138,6 +149,8 @@ public partial class App : PrismApplication
         containerRegistry.RegisterSingleton<IExportService, ExportService>();
         containerRegistry.RegisterSingleton<ICloudSyncService, CloudSyncService>();
         containerRegistry.RegisterSingleton<IDeliveryService, DeliveryService>();
+        containerRegistry.RegisterSingleton<ICameraService, HikvisionCameraService>();
+        containerRegistry.RegisterSingleton<IImageStorageService, ImageStorageService>();
 
         containerRegistry.RegisterForNavigation<LoginWindow>();
         containerRegistry.RegisterForNavigation<MainWindow>();
@@ -211,29 +224,99 @@ public partial class App : PrismApplication
         }
         catch { }
 
-        // 补充 WeightUnit 默认值
+        // 补充默认参数（INSERT OR IGNORE 保证幂等）
+        var defaults = new[]
+        {
+            ("WeightUnit",        "kg"),
+            ("CameraIp",          ""),
+            ("CameraPort",        "8000"),
+            ("CameraUser",        "admin"),
+            ("CameraPassword",    ""),
+            ("CaptureChannel",    "1"),
+            ("ImageStoragePath",  @"D:\WeighImages\"),
+            ("DiskWarningPercent","20"),
+            ("AutoDeleteKeepDays","90"),
+        };
+        foreach (var (key, val) in defaults)
+        {
+            try { db.Database.ExecuteSqlRaw(
+                $"INSERT OR IGNORE INTO SystemSettings (Key, Value) VALUES ('{key}', '{val}')"); }
+            catch { }
+        }
+
+        // 对旧年份归档表补加图片列（SQLite 仅支持 ADD COLUMN）
         try
         {
-            db.Database.ExecuteSqlRaw(
-                "INSERT OR IGNORE INTO SystemSettings (Key, Value) VALUES ('WeightUnit', 'kg')");
+            var conn = db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'WeighingArchive_%'";
+            using var reader = cmd.ExecuteReader();
+            var tables = new List<string>();
+            while (reader.Read()) tables.Add(reader.GetString(0));
+            reader.Close();
+            foreach (var tbl in tables)
+            {
+                try { db.Database.ExecuteSqlRaw($"ALTER TABLE {tbl} ADD COLUMN FirstWeighImagePath TEXT"); } catch { }
+                try { db.Database.ExecuteSqlRaw($"ALTER TABLE {tbl} ADD COLUMN SecondWeighImagePath TEXT"); } catch { }
+            }
         }
         catch { }
+    }
+
+    private void InitializeCamera()
+    {
+        AWS.Services.HCNetSDK.HCNetSDKApi.NET_DVR_Init();
+        AWS.Services.HCNetSDK.HCNetSDKApi.NET_DVR_SetLogToFile(3, @"D:\SWLog\HCNetSDK\", true);
+
+        var db     = Container.Resolve<AwsDbContext>();
+        var camera = Container.Resolve<ICameraService>();
+        var log    = Container.Resolve<ILogService>();
+
+        var ip   = db.SystemSettings.Find(SettingKeys.CameraIp)?.Value ?? string.Empty;
+        var port = int.TryParse(db.SystemSettings.Find(SettingKeys.CameraPort)?.Value, out var p) ? p : 8000;
+        var user = db.SystemSettings.Find(SettingKeys.CameraUser)?.Value ?? "admin";
+        var pwd  = db.SystemSettings.Find(SettingKeys.CameraPassword)?.Value ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(ip))
+        {
+            if (!camera.Login(ip, port, user, pwd))
+                log.Warn($"摄像机登录失败 {ip}:{port}，错误码：{AWS.Services.HCNetSDK.HCNetSDKApi.NET_DVR_GetLastError()}", "摄像");
+            else
+                log.Info($"摄像机已连接 {ip}:{port}", "摄像");
+        }
+    }
+
+    private void StartDiskMaintenanceTimer()
+    {
+        _maintenanceTimer = new System.Timers.Timer(TimeSpan.FromHours(1).TotalMilliseconds);
+        _maintenanceTimer.Elapsed += (_, _) =>
+        {
+            try { Container.Resolve<IImageStorageService>().RunMaintenance(); } catch { }
+        };
+        _maintenanceTimer.AutoReset = true;
+        _maintenanceTimer.Start();
     }
 
     private void InitializeSerialPort()
     {
         var db = Container.Resolve<AwsDbContext>();
         var serial = Container.Resolve<ISerialPortService>();
-        var enabled = db.SystemSettings.Find(SettingKeys.SerialPortEnabled)?.Value == "true";
-        if (!enabled)
+
+        var configJson = db.SystemSettings.Find(SettingKeys.SerialPortConfigs)?.Value ?? "[]";
+        List<SerialPortConfig> allConfigs;
+        try { allConfigs = JsonSerializer.Deserialize<List<SerialPortConfig>>(configJson) ?? []; }
+        catch { allConfigs = []; }
+
+        // 仅连接已启用的设备；全部禁用或列表为空时回退到模拟模式
+        var activeConfigs = allConfigs.Where(c => c.IsEnabled).ToList();
+        if (activeConfigs.Count == 0)
         {
             serial.StartSimulation();
             return;
         }
-        var portName = db.SystemSettings.Find(SettingKeys.SerialPortName)?.Value ?? "COM1";
-        var baudStr = db.SystemSettings.Find(SettingKeys.BaudRate)?.Value ?? "9600";
-        int baud = int.TryParse(baudStr, out int b) ? b : 9600;
-        try { serial.Connect(portName, baud); }
+
+        try { serial.ConnectAll(activeConfigs); }
         catch { /* 串口连接失败，界面状态栏会提示 */ }
     }
 

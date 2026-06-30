@@ -7,6 +7,8 @@
     xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
     xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
     xmlns:prism="http://prismlibrary.com/"
+    xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
+    xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
     prism:ViewModelLocator.AutoWireViewModel="True">
 
     <UserControl.Resources>
@@ -377,78 +379,103 @@
                 Background="{DynamicResource RegionBrush}"
                 CornerRadius="8">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="450" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel
-                        Grid.Row="0"
-                        Margin="0,0,0,8"
-                        Orientation="Horizontal">
-                        <pf:PackIcon
-                            Width="16"
-                            Height="16"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Kind="ChartBoxOutline" />
+                    <!--  摄像机实时预览  -->
+                    <Grid Grid.Column="0">
+                        <Border Background="Black" CornerRadius="4" ClipToBounds="True">
+                            <wfi:WindowsFormsHost>
+                                <wf:Panel x:Name="VideoPanel" BackColor="Black" />
+                            </wfi:WindowsFormsHost>
+                        </Border>
                         <TextBlock
-                            Margin="5,0,0,0"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            FontSize="{DynamicResource FontSize.H1.Large}"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            Text="今日收货净重（按品类 / 浅灰=汇总）" />
-                    </StackPanel>
+                            FontSize="11"
+                            Foreground="#888"
+                            Text="摄像机未连接"
+                            Visibility="{Binding IsCameraConnected, Converter={StaticResource BoolVis}}" />
+                    </Grid>
 
-                    <!--  LiveCharts 折线图  -->
-                    <lvc:CartesianChart
-                        Grid.Row="1"
-                        LegendPosition="Hidden"
-                        LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}"
-                        Series="{Binding HourlySeries}"
-                        TooltipFindingStrategy="CompareAllTakeClosest"
-                        TooltipPosition="Auto"
-                        TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
-                        XAxes="{Binding XAxes}"
-                        YAxes="{Binding YAxes}"
-                        ZoomMode="X" />
+                    <!--  今日收货净重  -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <!--  汇总数字  -->
-                    <Grid Grid.Row="2" Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <StackPanel
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            Orientation="Horizontal">
+                            <pf:PackIcon
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource PrimaryBrush}"
+                                Kind="ChartBoxOutline" />
                             <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
-                                Text="合计净重" />
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryTextBrush}"
-                                Text="{Binding TodayTotalWeight}" />
+                                Margin="5,0,0,0"
+                                VerticalAlignment="Center"
+                                FontSize="{DynamicResource FontSize.H1.Large}"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource PrimaryBrush}"
+                                Text="今日收货净重（按品类 / 浅灰=汇总）" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{DynamicResource SecondaryTextBrush}"
-                                Text="今日车次" />
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Foreground="{DynamicResource PrimaryTextBrush}">
-                                <Run Text="{Binding TodayVehicleCount, Mode=OneWay}" />
-                                <Run Text=" 次" />
-                            </TextBlock>
-                        </StackPanel>
+
+                        <!--  LiveCharts 折线图  -->
+                        <lvc:CartesianChart
+                            Grid.Row="1"
+                            LegendPosition="Hidden"
+                            LegendTextPaint="{x:Static charts:ChartPaints.TooltipText}"
+                            Series="{Binding HourlySeries}"
+                            TooltipFindingStrategy="CompareAllTakeClosest"
+                            TooltipPosition="Auto"
+                            TooltipTextPaint="{x:Static charts:ChartPaints.TooltipText}"
+                            XAxes="{Binding XAxes}"
+                            YAxes="{Binding YAxes}"
+                            ZoomMode="X" />
+
+                        <!--  汇总数字  -->
+                        <Grid Grid.Row="2" Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Text="合计净重" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource PrimaryTextBrush}"
+                                    Text="{Binding TodayTotalWeight}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="10"
+                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                    Text="今日车次" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    FontSize="13"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource PrimaryTextBrush}">
+                                    <Run Text="{Binding TodayVehicleCount, Mode=OneWay}" />
+                                    <Run Text=" 次" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Border>

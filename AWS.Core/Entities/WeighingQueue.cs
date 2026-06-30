@@ -18,4 +18,5 @@ public class WeighingQueue
     public string OperatorName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string? Remark { get; set; }
+    public string? FirstWeighImagePath { get; set; }
 }

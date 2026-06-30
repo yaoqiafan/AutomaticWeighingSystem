@@ -7,6 +7,50 @@
   <ItemGroup>
     <Content Include="recycle.ico" />
   </ItemGroup>
+
+  <!-- HCNetSDK 运行时 DLL（根目录） -->
+  <ItemGroup>
+    <Content Include="..\HCNetSDK\HCNetSDK.dll"        CopyToOutputDirectory="PreserveNewest" Link="HCNetSDK.dll" />
+    <Content Include="..\HCNetSDK\HCCore.dll"           CopyToOutputDirectory="PreserveNewest" Link="HCCore.dll" />
+    <Content Include="..\HCNetSDK\PlayCtrl.dll"         CopyToOutputDirectory="PreserveNewest" Link="PlayCtrl.dll" />
+    <Content Include="..\HCNetSDK\AudioProcess.dll"     CopyToOutputDirectory="PreserveNewest" Link="AudioProcess.dll" />
+    <Content Include="..\HCNetSDK\AudioRender.dll"      CopyToOutputDirectory="PreserveNewest" Link="AudioRender.dll" />
+    <Content Include="..\HCNetSDK\GdiPlus.dll"          CopyToOutputDirectory="PreserveNewest" Link="GdiPlus.dll" />
+    <Content Include="..\HCNetSDK\HXVA.dll"             CopyToOutputDirectory="PreserveNewest" Link="HXVA.dll" />
+    <Content Include="..\HCNetSDK\HmMerge.dll"          CopyToOutputDirectory="PreserveNewest" Link="HmMerge.dll" />
+    <Content Include="..\HCNetSDK\MP_Render.dll"        CopyToOutputDirectory="PreserveNewest" Link="MP_Render.dll" />
+    <Content Include="..\HCNetSDK\NPQos.dll"            CopyToOutputDirectory="PreserveNewest" Link="NPQos.dll" />
+    <Content Include="..\HCNetSDK\OpenAL32.dll"         CopyToOutputDirectory="PreserveNewest" Link="OpenAL32.dll" />
+    <Content Include="..\HCNetSDK\SuperRender.dll"      CopyToOutputDirectory="PreserveNewest" Link="SuperRender.dll" />
+    <Content Include="..\HCNetSDK\YUVProcess.dll"       CopyToOutputDirectory="PreserveNewest" Link="YUVProcess.dll" />
+    <Content Include="..\HCNetSDK\hlog.dll"             CopyToOutputDirectory="PreserveNewest" Link="hlog.dll" />
+    <Content Include="..\HCNetSDK\hpr.dll"              CopyToOutputDirectory="PreserveNewest" Link="hpr.dll" />
+    <Content Include="..\HCNetSDK\libcrypto-3-x64.dll"  CopyToOutputDirectory="PreserveNewest" Link="libcrypto-3-x64.dll" />
+    <Content Include="..\HCNetSDK\libmmd.dll"           CopyToOutputDirectory="PreserveNewest" Link="libmmd.dll" />
+    <Content Include="..\HCNetSDK\libssl-3-x64.dll"     CopyToOutputDirectory="PreserveNewest" Link="libssl-3-x64.dll" />
+    <Content Include="..\HCNetSDK\zlib1.dll"            CopyToOutputDirectory="PreserveNewest" Link="zlib1.dll" />
+  </ItemGroup>
+
+  <!-- HCNetSDKCom 子目录 -->
+  <ItemGroup>
+    <Content Include="..\HCNetSDK\HCNetSDKCom\AnalyzeData.dll"         CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\AnalyzeData.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\AudioIntercom.dll"        CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\AudioIntercom.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\AudioProcess.dll"         CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\AudioProcess.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\AudioRender.dll"          CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\AudioRender.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCAlarm.dll"              CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCAlarm.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCCoreDevCfg.dll"         CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCCoreDevCfg.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCDisplay.dll"            CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCDisplay.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCGeneralCfgMgr.dll"      CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCGeneralCfgMgr.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCIndustry.dll"           CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCIndustry.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCPlayBack.dll"           CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCPlayBack.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCPreview.dll"            CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCPreview.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\HCVoiceTalk.dll"          CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\HCVoiceTalk.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\OpenAL32.dll"             CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\OpenAL32.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\StreamTransClient.dll"    CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\StreamTransClient.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\SystemTransform.dll"      CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\SystemTransform.dll" />
+    <Content Include="..\HCNetSDK\HCNetSDKCom\libiconv2.dll"            CopyToOutputDirectory="PreserveNewest" Link="HCNetSDKCom\libiconv2.dll" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="PF.UI.Resources" />
     <PackageReference Include="Prism.DryIoc" />

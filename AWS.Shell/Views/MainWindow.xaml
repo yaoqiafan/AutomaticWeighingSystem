@@ -281,6 +281,16 @@
                         </ctrl:SidebarItem.Icon>
                     </ctrl:SidebarItem>
 
+                    <!--  摄像管理  -->
+                    <ctrl:SidebarItem Header="摄像管理" Tag="CameraManageView">
+                        <ctrl:SidebarItem.Icon>
+                            <pf:PackIcon
+                                Width="18"
+                                Height="18"
+                                Kind="Cctv" />
+                        </ctrl:SidebarItem.Icon>
+                    </ctrl:SidebarItem>
+
                     <!--  云同步（Admin，暂未启用）  -->
                     <ctrl:SidebarItem
                         Header="云同步"
@@ -483,6 +493,8 @@
 
         <!--  状态栏  -->
         <StatusBar Grid.Row="2" Background="{DynamicResource RegionBrush}">
+
+            <!--  总体串口状态  -->
             <StatusBarItem>
                 <StackPanel Orientation="Horizontal">
                     <Ellipse
@@ -494,6 +506,59 @@
                 </StackPanel>
             </StatusBarItem>
             <Separator />
+
+            <!--  每个设备的实时重量  -->
+            <StatusBarItem>
+                <ItemsControl ItemsSource="{Binding DeviceWeights}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,14,0">
+                                <Ellipse
+                                    Width="6"
+                                    Height="6"
+                                    Margin="0,0,3,0"
+                                    VerticalAlignment="Center"
+                                    Fill="{Binding StableBrush}" />
+                                <TextBlock FontSize="11" VerticalAlignment="Center">
+                                    <Run Text="{Binding PortName, Mode=OneWay}" />
+                                    <Run Text=" [" />
+                                    <Run Text="{Binding ModeLabel, Mode=OneWay}" />
+                                    <Run Text="] " />
+                                </TextBlock>
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    Text="{Binding WeightText, Mode=OneWay}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StatusBarItem>
+            <Separator />
+
+            <!--  摄像机状态  -->
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse
+                        Width="8"
+                        Height="8"
+                        Margin="0,0,4,0"
+                        Fill="{Binding CameraStatusBrush}" />
+                    <TextBlock
+                        FontSize="11"
+                        Foreground="{Binding CameraStatusBrush}"
+                        Text="{Binding CameraStatusText}" />
+                </StackPanel>
+            </StatusBarItem>
+            <Separator />
+
+            <!--  当前用户  -->
             <StatusBarItem>
                 <TextBlock>
                     <Run Foreground="{DynamicResource SecondaryTextBrush}" Text="当前用户：" />
@@ -501,6 +566,8 @@
                 </TextBlock>
             </StatusBarItem>
             <Separator />
+
+            <!--  右侧：日志、热重载、系统时间  -->
             <StatusBarItem HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
                     <Button
@@ -519,10 +586,26 @@
                                 Height="12"
                                 VerticalAlignment="Center"
                                 Kind="TextBoxOutline" />
-                            <TextBlock
+                            <TextBlock VerticalAlignment="Center" FontSize="10" Text=" 日志" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Height="22"
+                        Margin="0,0,8,0"
+                        Padding="8,0"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        Command="{Binding ReloadSerialPortCommand}"
+                        FontSize="10"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        ToolTip="热重载串口配置（从数据库重新加载，无需重启程序）">
+                        <StackPanel Orientation="Horizontal">
+                            <pf:PackIcon
+                                Width="12"
+                                Height="12"
                                 VerticalAlignment="Center"
-                                FontSize="10"
-                                Text=" 日志" />
+                                Kind="Refresh" />
+                            <TextBlock VerticalAlignment="Center" FontSize="10" Text=" 串口" />
                         </StackPanel>
                     </Button>
                     <TextBlock VerticalAlignment="Center" Text="{Binding SystemTime}" />

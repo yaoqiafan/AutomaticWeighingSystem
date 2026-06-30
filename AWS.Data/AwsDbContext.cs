@@ -49,7 +49,6 @@ public class AwsDbContext : DbContext
             new SystemSetting { Key = SettingKeys.SkinType, Value = "Dark" },
             new SystemSetting { Key = SettingKeys.CloudSyncEnabled, Value = "false" },
             new SystemSetting { Key = SettingKeys.CloudSyncUrl, Value = "" },
-            new SystemSetting { Key = SettingKeys.DefaultPricePerKg, Value = "0" },
             new SystemSetting { Key = SettingKeys.SerialPortEnabled, Value = "false" }
         );
 

@@ -19,4 +19,6 @@ public class WeighingArchiveRecord
     public double? PricePerUnit { get; set; }
     public double? TotalAmount { get; set; }
     public string? Remark { get; set; }
+    public string? FirstWeighImagePath  { get; set; }
+    public string? SecondWeighImagePath { get; set; }
 }

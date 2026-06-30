@@ -233,6 +233,79 @@
                             </MenuItem>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
+                    <DataGrid.RowDetailsTemplate>
+                        <DataTemplate>
+                            <Grid Margin="8" Background="{DynamicResource ContentBrush}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Text="首次称重图片" />
+                                    <pf:ImageViewer Height="200" ImgPath="{Binding FirstWeighImagePath}">
+                                        <pf:ImageViewer.Style>
+                                            <Style TargetType="pf:ImageViewer">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding FirstWeighImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </pf:ImageViewer.Style>
+                                    </pf:ImageViewer>
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" Text="（无图片）">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding FirstWeighImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        FontSize="11"
+                                        Foreground="{DynamicResource SecondaryTextBrush}"
+                                        Text="二次称重图片" />
+                                    <pf:ImageViewer Height="200" ImgPath="{Binding SecondWeighImagePath}">
+                                        <pf:ImageViewer.Style>
+                                            <Style TargetType="pf:ImageViewer">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SecondWeighImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </pf:ImageViewer.Style>
+                                    </pf:ImageViewer>
+                                    <TextBlock FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" Text="（无图片）">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SecondWeighImagePath}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGrid.RowDetailsTemplate>
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="Auto" Binding="{Binding TicketNo}" Header="磅单号" />
                         <DataGridTextColumn Width="Auto" Binding="{Binding VehiclePlate}" Header="车牌" />

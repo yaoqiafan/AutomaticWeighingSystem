@@ -35,7 +35,9 @@ public class DynamicArchiveManager
                 ArchivedAt TEXT NOT NULL,
                 PricePerUnit REAL,
                 TotalAmount REAL,
-                Remark TEXT
+                Remark TEXT,
+                FirstWeighImagePath TEXT,
+                SecondWeighImagePath TEXT
             )
             """;
         await _context.Database.ExecuteSqlRawAsync(sql);
@@ -51,9 +53,9 @@ public class DynamicArchiveManager
                 (TicketNo, VehiclePlate, CustomerName, GoodsName,
                  FirstWeighTime, FirstWeight, SecondWeighTime, SecondWeight,
                  GrossWeight, TareWeight, NetWeight, OperatorName, ArchivedAt,
-                 PricePerUnit, TotalAmount, Remark)
+                 PricePerUnit, TotalAmount, Remark, FirstWeighImagePath, SecondWeighImagePath)
             VALUES
-                (@p0,@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8,@p9,@p10,@p11,@p12,@p13,@p14,@p15);
+                (@p0,@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8,@p9,@p10,@p11,@p12,@p13,@p14,@p15,@p16,@p17);
             SELECT last_insert_rowid();
             """;
 
@@ -79,6 +81,8 @@ public class DynamicArchiveManager
             AddParam(cmd, "@p13", (object?)record.PricePerUnit ?? DBNull.Value);
             AddParam(cmd, "@p14", (object?)record.TotalAmount ?? DBNull.Value);
             AddParam(cmd, "@p15", (object?)record.Remark ?? DBNull.Value);
+            AddParam(cmd, "@p16", (object?)record.FirstWeighImagePath ?? DBNull.Value);
+            AddParam(cmd, "@p17", (object?)record.SecondWeighImagePath ?? DBNull.Value);
             var id = await cmd.ExecuteScalarAsync();
             return Convert.ToInt64(id);
         }
@@ -182,8 +186,20 @@ public class DynamicArchiveManager
         ArchivedAt = DateTime.Parse(r.GetString(r.GetOrdinal("ArchivedAt"))),
         PricePerUnit = r.IsDBNull(r.GetOrdinal("PricePerUnit")) ? null : r.GetDouble(r.GetOrdinal("PricePerUnit")),
         TotalAmount = r.IsDBNull(r.GetOrdinal("TotalAmount")) ? null : r.GetDouble(r.GetOrdinal("TotalAmount")),
-        Remark = r.IsDBNull(r.GetOrdinal("Remark")) ? null : r.GetString(r.GetOrdinal("Remark"))
+        Remark = r.IsDBNull(r.GetOrdinal("Remark")) ? null : r.GetString(r.GetOrdinal("Remark")),
+        FirstWeighImagePath  = SafeGetString(r, "FirstWeighImagePath"),
+        SecondWeighImagePath = SafeGetString(r, "SecondWeighImagePath"),
     };
+
+    private static string? SafeGetString(System.Data.IDataReader r, string col)
+    {
+        try
+        {
+            int ord = r.GetOrdinal(col);
+            return r.IsDBNull(ord) ? null : r.GetString(ord);
+        }
+        catch { return null; }
+    }
 
     private static void AddParam(System.Data.IDbCommand cmd, string name, object? value)
     {

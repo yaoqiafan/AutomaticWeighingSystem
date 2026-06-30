@@ -2,6 +2,7 @@ using AWS.Core.Entities;
 using AWS.Core.Interfaces;
 using AWS.Data;
 using LiveChartsCore;
+using Microsoft.EntityFrameworkCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -24,8 +25,20 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private readonly IUserService _userService;
     private readonly AwsDbContext _db;
     private readonly ILogService _log;
+    private readonly ICameraService _camera;
+    private readonly IImageStorageService _imageStorage;
     private readonly DispatcherTimer _statsTimer;
     private readonly Dispatcher _dispatcher;
+
+    private IntPtr _previewHwnd = IntPtr.Zero;
+    private bool _isNavigatedTo;
+
+    private bool _isCameraConnected;
+    public bool IsCameraConnected
+    {
+        get => _isCameraConnected;
+        private set => SetProperty(ref _isCameraConnected, value);
+    }
 
     private static readonly SKColor[] _categoryColors =
     [
@@ -148,9 +161,13 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     internal ISerialPortService SerialPortService => _serial;
     internal ILogService LogService => _log;
+    internal ICameraService CameraService => _camera;
+    internal IImageStorageService ImageStorage => _imageStorage;
+    internal int DefaultCaptureChannel { get; private set; } = 1;
 
-    internal async Task ArchiveItemAsync(long queueId, double secondWeight, double? price)
-        => await _weighingService.ArchiveAsync(queueId, secondWeight, price);
+    internal async Task ArchiveItemAsync(long queueId, double secondWeight, double? price,
+        string? secondWeighImagePath = null)
+        => await _weighingService.ArchiveAsync(queueId, secondWeight, price, secondWeighImagePath);
 
     internal async Task<bool> UpdateQueueAsync(long id, string vehiclePlate,
         string customerName, string goodsName, string? remark, double firstWeight)
@@ -181,7 +198,9 @@ public class WeighingViewModel : BindableBase, INavigationAware
         IArchiveQueryService archive,
         IUserService userService,
         AwsDbContext db,
-        ILogService log)
+        ILogService log,
+        ICameraService camera,
+        IImageStorageService imageStorage)
     {
         _serial = serial;
         _weighingService = weighingService;
@@ -189,7 +208,18 @@ public class WeighingViewModel : BindableBase, INavigationAware
         _userService = userService;
         _db = db;
         _log = log;
+        _camera = camera;
+        _imageStorage = imageStorage;
         _dispatcher = Application.Current.Dispatcher;
+
+        _camera.LoginStatusChanged += (_, _) =>
+        {
+            _dispatcher.BeginInvoke(() =>
+            {
+                IsCameraConnected = _camera.IsLoggedIn;
+                TryStartPreview();
+            });
+        };
 
         XAxes =
         [
@@ -236,14 +266,42 @@ public class WeighingViewModel : BindableBase, INavigationAware
         RaisePropertyChanged(nameof(IsAdmin));
         RaisePropertyChanged(nameof(IsNotAdmin));
         SaveCategoryPricesCommand.RaiseCanExecuteChanged();
+
+        var chStr = _db.SystemSettings.Find(SettingKeys.CaptureChannel)?.Value;
+        if (int.TryParse(chStr, out var ch)) DefaultCaptureChannel = ch;
+        IsCameraConnected = _camera.IsLoggedIn;
+
+        _isNavigatedTo = true;
+        TryStartPreview();
+
         _statsTimer.Start();
         await LoadInitialDataAsync();
     }
 
     public void OnNavigatedFrom(NavigationContext ctx)
     {
+        _isNavigatedTo = false;
+        _camera.StopPreview();
         _serial.WeightReceived -= OnWeightReceived;
         _statsTimer.Stop();
+    }
+
+    public void SetPreviewHandle(IntPtr hwnd)
+    {
+        _previewHwnd = hwnd;
+        TryStartPreview();
+    }
+
+    public void ClearPreviewHandle()
+    {
+        _previewHwnd = IntPtr.Zero;
+        _camera.StopPreview();
+    }
+
+    private void TryStartPreview()
+    {
+        if (_isNavigatedTo && _previewHwnd != IntPtr.Zero && _camera.IsLoggedIn)
+            _camera.StartPreview(DefaultCaptureChannel, _previewHwnd);
     }
 
     public bool IsNavigationTarget(NavigationContext ctx) => false;
@@ -353,6 +411,9 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     private void OnWeightReceived(object? sender, Core.Models.WeightReading reading)
     {
+        // 仅响应首重设备或两者通用设备；二次称重专用设备的数据不在此面板显示
+        if (reading.Source == Core.Enums.WeighMode.SecondWeigh) return;
+
         _dispatcher.Invoke(() =>
         {
             CurrentWeight = reading.Value;
@@ -373,6 +434,15 @@ public class WeighingViewModel : BindableBase, INavigationAware
             var logCategory = _selectedCategory.Name;
             var logWeight = _capturedWeight.Value;
 
+            // 预生成磅单号以便确定图片路径
+            var ticketNo = await _weighingService.GenerateTicketNoAsync();
+            string? firstImagePath = null;
+            if (_camera.IsLoggedIn)
+            {
+                var path = _imageStorage.BuildPath(ticketNo, "first");
+                firstImagePath = await _camera.CaptureJpegAsync(DefaultCaptureChannel, path);
+            }
+
             await _weighingService.CreateInitialEntryAsync(
                 vehiclePlate: VehiclePlate,
                 customerName: CustomerName,
@@ -382,7 +452,9 @@ public class WeighingViewModel : BindableBase, INavigationAware
                 firstWeight: _capturedWeight.Value,
                 operatorId: user.Id,
                 operatorName: user.Username,
-                remark: string.IsNullOrWhiteSpace(Remark) ? null : Remark
+                remark: string.IsNullOrWhiteSpace(Remark) ? null : Remark,
+                ticketNo: ticketNo,
+                firstWeighImagePath: firstImagePath
             );
 
             VehiclePlate = string.Empty;
