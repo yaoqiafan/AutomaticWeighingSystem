@@ -2,6 +2,7 @@ using AWS.Core.Entities;
 using AWS.Core.Interfaces;
 using AWS.Core.Models;
 using AWS.Data;
+using AWS.Services.HCNetSDK;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -115,7 +116,7 @@ public class CameraManageViewModel : BindableBase, INavigationAware
     {
         if (!_camera.Login(Ip, Port, User, Pwd))
         {
-            _log.Warn($"摄像机登录失败 {Ip}:{Port}", "摄像");
+            _log.Warn($"摄像机登录失败 {Ip}:{Port}，{HCNetSDKError.GetLastError()}", "摄像");
             IsConnected = false;
             return;
         }
@@ -142,7 +143,7 @@ public class CameraManageViewModel : BindableBase, INavigationAware
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var result = await _camera.CaptureJpegAsync(_selectedChannel.ChannelNo, path);
         if (result != null) _log.Info($"手动抓图成功：{path}", "摄像");
-        else                _log.Warn("手动抓图失败", "摄像");
+        else                _log.Warn($"手动抓图失败，{HCNetSDKError.GetLastError()}", "摄像");
     }
 
     private void LoadParams()
