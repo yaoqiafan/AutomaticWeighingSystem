@@ -53,8 +53,8 @@
                     </TextBlock>
                 </StackPanel>
                 <StackPanel
-                    DockPanel.Dock="Right"
                     VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
                     Orientation="Horizontal">
                     <Button
                         Margin="0,0,8,0"
@@ -77,8 +77,8 @@
                 ItemContentHeight="280"
                 ItemContentHeightFixed="True"
                 ItemHeight="220"
-                ItemsSource="{Binding Users}"
-                ItemWidth="190">
+                ItemWidth="190"
+                ItemsSource="{Binding Users}">
 
                 <!--  ══ 卡片封面 ══  -->
                 <pf:CoverView.ItemHeaderTemplate>
@@ -213,32 +213,38 @@
 
                             <!--  用户名  -->
                             <TextBlock
-                                Grid.Row="0" Grid.Column="0"
+                                Grid.Row="0"
+                                Grid.Column="0"
                                 Margin="0,0,0,4"
                                 FontWeight="Medium"
                                 Text="用户名" />
                             <TextBox
-                                Grid.Row="1" Grid.Column="0"
+                                Grid.Row="1"
+                                Grid.Column="0"
                                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
 
                             <!--  密码（留空不修改）  -->
                             <TextBlock
-                                Grid.Row="0" Grid.Column="2"
+                                Grid.Row="0"
+                                Grid.Column="2"
                                 Margin="0,0,0,4"
                                 FontWeight="Medium"
                                 Text="密码（留空不修改）" />
                             <TextBox
-                                Grid.Row="1" Grid.Column="2"
+                                Grid.Row="1"
+                                Grid.Column="2"
                                 Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}" />
 
                             <!--  权限等级  -->
                             <TextBlock
-                                Grid.Row="3" Grid.Column="0"
+                                Grid.Row="3"
+                                Grid.Column="0"
                                 Margin="0,0,0,4"
                                 FontWeight="Medium"
                                 Text="权限等级" />
                             <ComboBox
-                                Grid.Row="4" Grid.Column="0"
+                                Grid.Row="4"
+                                Grid.Column="0"
                                 ItemsSource="{Binding Data.AvailableRoles, Source={StaticResource Proxy}}"
                                 SelectedItem="{Binding Role, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
@@ -250,12 +256,14 @@
 
                             <!--  创建时间（只读）  -->
                             <TextBlock
-                                Grid.Row="3" Grid.Column="2"
+                                Grid.Row="3"
+                                Grid.Column="2"
                                 Margin="0,0,0,4"
                                 FontWeight="Medium"
                                 Text="创建时间" />
                             <TextBlock
-                                Grid.Row="4" Grid.Column="2"
+                                Grid.Row="4"
+                                Grid.Column="2"
                                 VerticalAlignment="Center"
                                 FontSize="12"
                                 Foreground="{DynamicResource SecondaryTextBrush}"
@@ -263,13 +271,17 @@
 
                             <!--  启用状态（新用户默认启用，无需显示）  -->
                             <CheckBox
-                                Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
+                                Grid.Row="6"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
                                 Content="账号启用"
                                 IsChecked="{Binding IsActive}" />
 
                             <!--  操作按钮  -->
                             <StackPanel
-                                Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3"
+                                Grid.Row="8"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
                                 <Button

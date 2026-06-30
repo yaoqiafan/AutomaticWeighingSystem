@@ -42,18 +42,55 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="IP：" />
-                <TextBox Grid.Column="1" Height="28" Padding="6,0" VerticalContentAlignment="Center" Text="{Binding Ip, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="端口：" />
-                <TextBox Grid.Column="4" Height="28" Padding="6,0" VerticalContentAlignment="Center" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="用户名：" />
-                <TextBox Grid.Column="7" Height="28" Padding="6,0" VerticalContentAlignment="Center" Text="{Binding User, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Grid.Column="9" VerticalAlignment="Center" Text="密码：" />
-                <PasswordBox Grid.Column="10" Height="28" Padding="6,0" VerticalContentAlignment="Center" />
+                <TextBlock
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="IP：" />
+                <TextBox
+                    Grid.Column="1"
+                    Height="28"
+                    Padding="6,0"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding Ip, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Text="端口：" />
+                <TextBox
+                    Grid.Column="4"
+                    Height="28"
+                    Padding="6,0"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock
+                    Grid.Column="6"
+                    VerticalAlignment="Center"
+                    Text="用户名：" />
+                <TextBox
+                    Grid.Column="7"
+                    Height="28"
+                    Padding="6,0"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding User, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock
+                    Grid.Column="9"
+                    VerticalAlignment="Center"
+                    Text="密码：" />
+                <PasswordBox
+                    Grid.Column="10"
+                    Height="28"
+                    Padding="6,0"
+                    VerticalContentAlignment="Center" />
 
                 <!--  状态  -->
-                <StackPanel Grid.Column="12" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" Margin="0,0,5,0">
+                <StackPanel
+                    Grid.Column="12"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Ellipse
+                        Width="8"
+                        Height="8"
+                        Margin="0,0,5,0">
                         <Ellipse.Style>
                             <Style TargetType="Ellipse">
                                 <Setter Property="Fill" Value="Gray" />
@@ -65,7 +102,10 @@
                             </Style>
                         </Ellipse.Style>
                     </Ellipse>
-                    <TextBlock VerticalAlignment="Center" FontSize="11" Text="{Binding StatusText}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="11"
+                        Text="{Binding StatusText}" />
                 </StackPanel>
 
                 <Button
@@ -120,7 +160,10 @@
                         ItemsSource="{Binding Channels}"
                         SelectedItem="{Binding SelectedChannel}" />
 
-                    <StackPanel Grid.Row="2" Margin="0,8,0,0" Orientation="Vertical">
+                    <StackPanel
+                        Grid.Row="2"
+                        Margin="0,8,0,0"
+                        Orientation="Vertical">
                         <Button
                             Margin="0,0,0,4"
                             Command="{Binding StartPreviewCommand}"
@@ -141,12 +184,10 @@
             <Border
                 Grid.Column="2"
                 Background="Black"
-                CornerRadius="8"
-                ClipToBounds="True">
+                ClipToBounds="True"
+                CornerRadius="8">
                 <Grid>
-                    <wfi:WindowsFormsHost>
-                        <wf:Panel x:Name="VideoPanel" BackColor="Black" />
-                    </wfi:WindowsFormsHost>
+
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -164,6 +205,11 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
+
+                    <wfi:WindowsFormsHost>
+                        <wf:Panel x:Name="VideoPanel" BackColor="Black" />
+                    </wfi:WindowsFormsHost>
+
                 </Grid>
             </Border>
         </Grid>

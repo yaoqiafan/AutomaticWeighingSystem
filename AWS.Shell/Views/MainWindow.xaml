@@ -129,7 +129,7 @@
             </Setter>
         </Style>
 
-       
+
     </pf:Window.Resources>
 
     <!--  标题栏  -->
@@ -517,23 +517,23 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,14,0">
+                            <StackPanel Margin="0,0,14,0" Orientation="Horizontal">
                                 <Ellipse
                                     Width="6"
                                     Height="6"
                                     Margin="0,0,3,0"
                                     VerticalAlignment="Center"
                                     Fill="{Binding StableBrush}" />
-                                <TextBlock FontSize="11" VerticalAlignment="Center">
+                                <TextBlock VerticalAlignment="Center" FontSize="11">
                                     <Run Text="{Binding PortName, Mode=OneWay}" />
                                     <Run Text=" [" />
                                     <Run Text="{Binding ModeLabel, Mode=OneWay}" />
                                     <Run Text="] " />
                                 </TextBlock>
                                 <TextBlock
+                                    VerticalAlignment="Center"
                                     FontSize="11"
                                     FontWeight="SemiBold"
-                                    VerticalAlignment="Center"
                                     Text="{Binding WeightText, Mode=OneWay}" />
                             </StackPanel>
                         </DataTemplate>
@@ -586,7 +586,10 @@
                                 Height="12"
                                 VerticalAlignment="Center"
                                 Kind="TextBoxOutline" />
-                            <TextBlock VerticalAlignment="Center" FontSize="10" Text=" 日志" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Text=" 日志" />
                         </StackPanel>
                     </Button>
                     <Button
@@ -605,7 +608,10 @@
                                 Height="12"
                                 VerticalAlignment="Center"
                                 Kind="Refresh" />
-                            <TextBlock VerticalAlignment="Center" FontSize="10" Text=" 串口" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Text=" 串口" />
                         </StackPanel>
                     </Button>
                     <TextBlock VerticalAlignment="Center" Text="{Binding SystemTime}" />
@@ -613,7 +619,7 @@
             </StatusBarItem>
         </StatusBar>
 
-     
+
     </Grid>
 
     <i:Interaction.Triggers>

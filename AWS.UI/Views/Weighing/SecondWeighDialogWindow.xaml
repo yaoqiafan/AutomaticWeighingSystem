@@ -1,11 +1,13 @@
-<pf:Window x:Class="AWS.UI.Views.Weighing.SecondWeighDialogWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
-        Title="二次称重" Width="440" SizeToContent="Height"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        >
+<pf:Window
+    x:Class="AWS.UI.Views.Weighing.SecondWeighDialogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    Title="二次称重"
+    Width="440"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    WindowStartupLocation="CenterOwner">
 
     <pf:Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolVis" />
@@ -23,26 +25,37 @@
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /> <!-- 磅单信息 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  磅单信息  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 实时重量 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  实时重量  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 计算结果 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  计算结果  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 单价/金额 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  单价/金额  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 首次称重图片 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  首次称重图片  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 二次称重图片 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  二次称重图片  -->
             <RowDefinition Height="12" />
-            <RowDefinition Height="Auto" /> <!-- 备注 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  备注  -->
             <RowDefinition Height="16" />
-            <RowDefinition Height="Auto" /> <!-- 按钮 -->
+            <RowDefinition Height="Auto" /> 
+            <!--  按钮  -->
         </Grid.RowDefinitions>
 
-        <!-- ① 磅单基础信息 -->
-        <Border Grid.Row="0" Background="{DynamicResource RegionBrush}"
-                CornerRadius="6" Padding="12,10">
+        <!--  ① 磅单基础信息  -->
+        <Border
+            Grid.Row="0"
+            Padding="12,10"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="60" />
@@ -56,15 +69,27 @@
                     <RowDefinition Height="26" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="磅单号" Style="{StaticResource LabelStyle}" />
-                <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
-                           Text="{Binding QueueItem.TicketNo}" Style="{StaticResource ValueStyle}"
-                           FontWeight="SemiBold" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource LabelStyle}"
+                    Text="磅单号" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="3"
+                    FontWeight="SemiBold"
+                    Style="{StaticResource ValueStyle}"
+                    Text="{Binding QueueItem.TicketNo}" />
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="车牌号" Style="{StaticResource LabelStyle}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Style="{StaticResource LabelStyle}"
+                    Text="车牌号" />
                 <TextBlock Grid.Row="1" Grid.Column="1">
                     <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource ValueStyle}">
+                        <Style BasedOn="{StaticResource ValueStyle}" TargetType="TextBlock">
                             <Setter Property="Text" Value="{Binding QueueItem.VehiclePlate}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding QueueItem.VehiclePlate}" Value="{x:Null}">
@@ -75,36 +100,65 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <TextBlock Grid.Row="1" Grid.Column="2" Text="货物" Style="{StaticResource LabelStyle}" />
-                <TextBlock Grid.Row="1" Grid.Column="3"
-                           Text="{Binding QueueItem.GoodsName}" Style="{StaticResource ValueStyle}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Style="{StaticResource LabelStyle}"
+                    Text="货物" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Style="{StaticResource ValueStyle}"
+                    Text="{Binding QueueItem.GoodsName}" />
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="首次重量" Style="{StaticResource LabelStyle}" />
-                <TextBlock Grid.Row="2" Grid.Column="1"
-                           Style="{StaticResource ValueStyle}" FontWeight="SemiBold">
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Style="{StaticResource LabelStyle}"
+                    Text="首次重量" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    FontWeight="SemiBold"
+                    Style="{StaticResource ValueStyle}">
                     <Run Text="{Binding QueueItem.FirstWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                     <Run Text=" kg" />
                 </TextBlock>
 
-                <TextBlock Grid.Row="2" Grid.Column="2" Text="入场时间" Style="{StaticResource LabelStyle}" />
-                <TextBlock Grid.Row="2" Grid.Column="3"
-                           Text="{Binding QueueItem.FirstWeighTime, StringFormat='HH:mm'}"
-                           Style="{StaticResource ValueStyle}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Style="{StaticResource LabelStyle}"
+                    Text="入场时间" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    Style="{StaticResource ValueStyle}"
+                    Text="{Binding QueueItem.FirstWeighTime, StringFormat='HH:mm'}" />
             </Grid>
         </Border>
 
-        <!-- ② 实时重量 + 采集 -->
-        <Border Grid.Row="2" Background="{DynamicResource RegionBrush}"
-                CornerRadius="6" Padding="12,10">
+        <!--  ② 实时重量 + 采集  -->
+        <Border
+            Grid.Row="2"
+            Padding="12,10"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- 稳定指示灯 -->
-                    <Ellipse Width="10" Height="10" Margin="0,0,8,0">
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <!--  稳定指示灯  -->
+                    <Ellipse
+                        Width="10"
+                        Height="10"
+                        Margin="0,0,8,0">
                         <Ellipse.Style>
                             <Style TargetType="Ellipse">
                                 <Setter Property="Fill" Value="#FF5722" />
@@ -117,26 +171,37 @@
                         </Ellipse.Style>
                     </Ellipse>
 
-                    <TextBlock FontSize="32" FontWeight="Bold"
-                               Foreground="{DynamicResource PrimaryTextBrush}">
+                    <TextBlock
+                        FontSize="32"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="{Binding CurrentWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
                     </TextBlock>
-                    <TextBlock Text=" kg" FontSize="16" VerticalAlignment="Bottom"
-                               Margin="4,0,0,4"
-                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock
+                        Margin="4,0,0,4"
+                        VerticalAlignment="Bottom"
+                        FontSize="16"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text=" kg" />
                 </StackPanel>
 
-                <Button Grid.Column="1" Content="采 集" Width="80" Height="36"
-                        Command="{Binding CaptureCommand}"
-                        FontSize="13" />
+                <Button
+                    Grid.Column="1"
+                    Width="80"
+                    Height="36"
+                    Command="{Binding CaptureCommand}"
+                    Content="采 集"
+                    FontSize="13" />
             </Grid>
         </Border>
 
-        <!-- ③ 计算结果（采集后显示） -->
-        <Border Grid.Row="4"
-                Visibility="{Binding HasCapturedWeight, Converter={StaticResource BoolVis}}"
-                Background="{DynamicResource RegionBrush}"
-                CornerRadius="6" Padding="12,10">
+        <!--  ③ 计算结果（采集后显示）  -->
+        <Border
+            Grid.Row="4"
+            Padding="12,10"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="6"
+            Visibility="{Binding HasCapturedWeight, Converter={StaticResource BoolVis}}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -145,38 +210,53 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                    <TextBlock Text="毛 重" Style="{StaticResource LabelStyle}"
-                               HorizontalAlignment="Center" />
-                    <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource PrimaryTextBrush}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource LabelStyle}"
+                        Text="毛 重" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="{Binding GrossWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
-                        <Run Text=" kg" FontSize="11" />
+                        <Run FontSize="11" Text=" kg" />
                     </TextBlock>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                    <TextBlock Text="皮 重" Style="{StaticResource LabelStyle}"
-                               HorizontalAlignment="Center" />
-                    <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"
-                               Foreground="{DynamicResource PrimaryTextBrush}">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource LabelStyle}"
+                        Text="皮 重" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource PrimaryTextBrush}">
                         <Run Text="{Binding TareWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
-                        <Run Text=" kg" FontSize="11" />
+                        <Run FontSize="11" Text=" kg" />
                     </TextBlock>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                    <TextBlock Text="净 重" Style="{StaticResource LabelStyle}"
-                               HorizontalAlignment="Center" />
-                    <TextBlock FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
-                               Foreground="#4CAF50">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource LabelStyle}"
+                        Text="净 重" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="#4CAF50">
                         <Run Text="{Binding NetWeight, StringFormat='{}{0:F1}', Mode=OneWay}" />
-                        <Run Text=" kg" FontSize="12" />
+                        <Run FontSize="12" Text=" kg" />
                     </TextBlock>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- ④ 单价 / 金额 -->
+        <!--  ④ 单价 / 金额  -->
         <Grid Grid.Row="6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -185,28 +265,46 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <TextBlock Text="单价 (元/kg)" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
-                <TextBox Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}"
-                         Height="32" Padding="8,0" FontSize="13"
-                         VerticalContentAlignment="Center" />
+                <TextBlock
+                    Margin="0,0,0,4"
+                    Style="{StaticResource LabelStyle}"
+                    Text="单价 (元/kg)" />
+                <TextBox
+                    Height="32"
+                    Padding="8,0"
+                    VerticalContentAlignment="Center"
+                    FontSize="13"
+                    Text="{Binding PriceText, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
             <StackPanel Grid.Column="2" Visibility="{Binding HasCapturedWeight, Converter={StaticResource BoolVis}}">
-                <TextBlock Text="合计金额 (元)" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
-                <Border Height="32" Background="{DynamicResource RegionBrush}"
-                        CornerRadius="3" Padding="8,0">
-                    <TextBlock VerticalAlignment="Center" FontSize="13" FontWeight="Bold"
-                               Foreground="#4CAF50">
+                <TextBlock
+                    Margin="0,0,0,4"
+                    Style="{StaticResource LabelStyle}"
+                    Text="合计金额 (元)" />
+                <Border
+                    Height="32"
+                    Padding="8,0"
+                    Background="{DynamicResource RegionBrush}"
+                    CornerRadius="3">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="13"
+                        FontWeight="Bold"
+                        Foreground="#4CAF50">
                         <Run Text="{Binding TotalAmount, StringFormat='{}{0:F2}', Mode=OneWay}" />
                     </TextBlock>
                 </Border>
             </StackPanel>
         </Grid>
 
-        <!-- ⑤ 首次称重图片 -->
+        <!--  ⑤ 首次称重图片  -->
         <StackPanel Grid.Row="8">
-            <TextBlock Text="首次称重图片" Style="{StaticResource LabelStyle}" Margin="0,0,0,6" />
-            <!-- 有图片：ImageViewer -->
+            <TextBlock
+                Margin="0,0,0,6"
+                Style="{StaticResource LabelStyle}"
+                Text="首次称重图片" />
+            <!--  有图片：ImageViewer  -->
             <pf:ImageViewer Height="200" ImgPath="{Binding QueueItem.FirstWeighImagePath}">
                 <pf:ImageViewer.Style>
                     <Style TargetType="pf:ImageViewer">
@@ -219,8 +317,11 @@
                     </Style>
                 </pf:ImageViewer.Style>
             </pf:ImageViewer>
-            <!-- 无图片：占位提示 -->
-            <Border Height="200" Background="{DynamicResource RegionBrush}" CornerRadius="6">
+            <!--  无图片：占位提示  -->
+            <Border
+                Height="200"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="6">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Collapsed" />
@@ -231,14 +332,21 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Text="（无图片）" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="（无图片）" />
             </Border>
         </StackPanel>
 
-        <!-- ⑥ 二次称重图片（采集时抓取） -->
+        <!--  ⑥ 二次称重图片（采集时抓取）  -->
         <StackPanel Grid.Row="10">
-            <TextBlock Text="二次称重图片" Style="{StaticResource LabelStyle}" Margin="0,0,0,6" />
+            <TextBlock
+                Margin="0,0,0,6"
+                Style="{StaticResource LabelStyle}"
+                Text="二次称重图片" />
             <pf:ImageViewer Height="200" ImgPath="{Binding CapturedImagePath}">
                 <pf:ImageViewer.Style>
                     <Style TargetType="pf:ImageViewer">
@@ -251,7 +359,10 @@
                     </Style>
                 </pf:ImageViewer.Style>
             </pf:ImageViewer>
-            <Border Height="200" Background="{DynamicResource RegionBrush}" CornerRadius="6">
+            <Border
+                Height="200"
+                Background="{DynamicResource RegionBrush}"
+                CornerRadius="6">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Collapsed" />
@@ -262,20 +373,30 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Text="（无图片）" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="13"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="（无图片）" />
             </Border>
         </StackPanel>
 
-        <!-- ⑦ 备注 -->
+        <!--  ⑦ 备注  -->
         <StackPanel Grid.Row="12">
-            <TextBlock Text="备注更新（可选）" Style="{StaticResource LabelStyle}" Margin="0,0,0,4" />
-            <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
-                     Height="32" Padding="8,0" FontSize="13"
-                     VerticalContentAlignment="Center" />
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{StaticResource LabelStyle}"
+                Text="备注更新（可选）" />
+            <TextBox
+                Height="32"
+                Padding="8,0"
+                VerticalContentAlignment="Center"
+                FontSize="13"
+                Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
 
-        <!-- ⑧ 操作按钮 -->
+        <!--  ⑧ 操作按钮  -->
         <Grid Grid.Row="14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -283,13 +404,22 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" Content="取  消" Height="38" FontSize="13"
-                    Command="{Binding CancelCommand}" />
+            <Button
+                Grid.Column="0"
+                Height="38"
+                Command="{Binding CancelCommand}"
+                Content="取  消"
+                FontSize="13" />
 
-            <Button Grid.Column="2" Content="确 认 存 档" Height="38" FontSize="13"
-                    Command="{Binding ConfirmCommand}"
-                    Background="#1976D2" Foreground="White"
-                    FontWeight="SemiBold" />
+            <Button
+                Grid.Column="2"
+                Height="38"
+                Background="#1976D2"
+                Command="{Binding ConfirmCommand}"
+                Content="确 认 存 档"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="White" />
         </Grid>
     </Grid>
 </pf:Window>

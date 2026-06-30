@@ -1,15 +1,14 @@
 using AWS.Core.Entities;
 using AWS.Core.Interfaces;
 using AWS.Data;
+using AWS.UI.Views.Charts;
 using LiveChartsCore;
-using Microsoft.EntityFrameworkCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.EntityFrameworkCore;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Navigation.Regions;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -22,6 +21,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private readonly ISerialPortService _serial;
     private readonly IWeighingService _weighingService;
     private readonly IArchiveQueryService _archive;
+    private readonly IDeliveryService _delivery;
     private readonly IUserService _userService;
     private readonly AwsDbContext _db;
     private readonly ILogService _log;
@@ -32,6 +32,9 @@ public class WeighingViewModel : BindableBase, INavigationAware
 
     private IntPtr _previewHwnd = IntPtr.Zero;
     private bool _isNavigatedTo;
+
+    private Dictionary<double, WeighingArchiveRecord> _receivePointMap = [];
+    private Dictionary<double, DeliveryRecord> _deliveryPointMap = [];
 
     private bool _isCameraConnected;
     public bool IsCameraConnected
@@ -191,11 +194,13 @@ public class WeighingViewModel : BindableBase, INavigationAware
     public DelegateCommand<WeighingQueue> CardClickCommand { get; }
     public DelegateCommand<WeighingQueue> DeleteQueueItemCommand { get; }
     public DelegateCommand<WeighingQueue> EditQueueCommand { get; }
+    public DelegateCommand<ChartPoint> ChartPointDownCommand { get; }
 
     public WeighingViewModel(
         ISerialPortService serial,
         IWeighingService weighingService,
         IArchiveQueryService archive,
+        IDeliveryService delivery,
         IUserService userService,
         AwsDbContext db,
         ILogService log,
@@ -205,6 +210,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         _serial = serial;
         _weighingService = weighingService;
         _archive = archive;
+        _delivery = delivery;
         _userService = userService;
         _db = db;
         _log = log;
@@ -253,6 +259,7 @@ public class WeighingViewModel : BindableBase, INavigationAware
         CardClickCommand = new DelegateCommand<WeighingQueue>(OnCardClick);
         DeleteQueueItemCommand = new DelegateCommand<WeighingQueue>(async item => await OnDeleteQueueItemAsync(item));
         EditQueueCommand = new DelegateCommand<WeighingQueue>(async item => await OnEditQueueAsync(item));
+        ChartPointDownCommand = new DelegateCommand<ChartPoint>(OnChartPointDown);
 
         _statsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
         _statsTimer.Tick += async (_, _) => await RefreshStatsAsync();
@@ -332,71 +339,88 @@ public class WeighingViewModel : BindableBase, INavigationAware
     private async Task RefreshStatsAsync()
     {
         var today = DateTime.Today;
-        var records = await _archive.QueryAsync(today.Year, today, today.AddDays(1).AddSeconds(-1));
+        var records         = await _archive.QueryAsync(today.Year, today, today.AddDays(1).AddSeconds(-1));
+        var deliveryRecords = await _delivery.GetTodayRecordsAsync();
         var (total, count, _) = await _weighingService.GetTodayStatsAsync();
 
-        // 品类折线：每笔记录一个点，X = 实际时分（小数小时）
+        // 品类柱：每笔收货一个点，X 含秒精度确保唯一，Y = 该笔净重
+        static double ToX(DateTime t) => t.Hour + t.Minute / 60.0 + t.Second / 3600.0;
+
+        var newReceiveMap  = records.ToDictionary(r => ToX(r.ArchivedAt), r => r);
+        var newDeliveryMap = deliveryRecords.ToDictionary(r => ToX(r.DeliveryTime), r => r);
+
         var categoryPoints = records
             .GroupBy(r => r.GoodsName)
             .OrderBy(g => g.Key)
             .ToDictionary(
                 g => g.Key,
-                g =>
-                {
-                    double cat = 0;
-                    return g.OrderBy(r => r.ArchivedAt)
-                            .Select(r =>
-                            {
-                                cat += r.NetWeight;
-                                return new ObservablePoint(
-                                    r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
-                                    cat);
-                            })
-                            .ToArray();
-                });
+                g => g.OrderBy(r => r.ArchivedAt)
+                       .Select(r => new ObservablePoint(ToX(r.ArchivedAt), r.NetWeight))
+                       .ToArray());
 
-        // 汇总折线：每笔记录一个点，Y = 到该时刻的累计净重
-        double running = 0;
-        var summaryPoints = records
-            .OrderBy(r => r.ArchivedAt)
-            .Select(r =>
+        // 送货柱：每笔送货一个点，X 含秒精度，Y = 该笔送货重量
+        var deliveryPoints = deliveryRecords
+            .OrderBy(r => r.DeliveryTime)
+            .Select(r => new ObservablePoint(ToX(r.DeliveryTime), r.TotalWeight))
+            .ToArray();
+
+        // 汇总阶梯线：收货 +，送货 −，按时间顺序逐笔累计
+        double sRunning = 0;
+        var summaryPoints = records.Select(r => (Time: r.ArchivedAt, Weight: r.NetWeight, IsDelivery: false))
+            .Concat(deliveryRecords.Select(r => (Time: r.DeliveryTime, Weight: r.TotalWeight, IsDelivery: true)))
+            .OrderBy(e => e.Time)
+            .Select(e =>
             {
-                running += r.NetWeight;
-                return new ObservablePoint(
-                    r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
-                    running);
+                sRunning += e.IsDelivery ? -e.Weight : e.Weight;
+                return new ObservablePoint(ToX(e.Time), sRunning);
             })
+            .ToArray();
+
+        // 送货柱取负值，使其显示在 X 轴下方
+        var deliveryNegPoints = deliveryPoints
+            .Select(p => new ObservablePoint(p.X, p.Y.HasValue ? -p.Y.Value : (double?)null))
             .ToArray();
 
         _dispatcher.Invoke(() =>
         {
+            _receivePointMap  = newReceiveMap;
+            _deliveryPointMap = newDeliveryMap;
             HourlySeries.Clear();
             int ci = 0;
             foreach (var (goodsName, pts) in categoryPoints)
             {
                 var clr = _categoryColors[ci++ % _categoryColors.Length];
-                HourlySeries.Add(new LineSeries<ObservablePoint>
+                HourlySeries.Add(new ColumnSeries<ObservablePoint>
                 {
                     Values = pts,
                     Name = goodsName,
-                    Fill = null,
-                    GeometrySize = 8,
-                    Stroke = new SolidColorPaint(clr, 2),
-                    GeometryFill = new SolidColorPaint(clr),
-                    GeometryStroke = null,
-                    LineSmoothness = 0,
+                    Fill = new SolidColorPaint(clr),
+                    Stroke = null,
+                    MaxBarWidth = 18,
+                    IgnoresBarPosition = true,
                 });
             }
-            HourlySeries.Add(new LineSeries<ObservablePoint>
+            if (deliveryNegPoints.Length > 0)
+            {
+                HourlySeries.Add(new ColumnSeries<ObservablePoint>
+                {
+                    Values = deliveryNegPoints,
+                    Name = "送货重量",
+                    Fill = new SolidColorPaint(new SKColor(0x66, 0xBB, 0x6A)),
+                    Stroke = null,
+                    MaxBarWidth = 18,
+                    IgnoresBarPosition = true,
+                });
+            }
+            HourlySeries.Add(new StepLineSeries<ObservablePoint>
             {
                 Values = summaryPoints,
-                Name = "汇总",
+                Name = "净库存变化",
                 Fill = null,
                 GeometrySize = 6,
                 Stroke = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0), 2.5f),
                 GeometryFill = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0)),
                 GeometryStroke = null,
-                LineSmoothness = 0,
             });
 
             XAxes[0].MinLimit = null;
@@ -524,5 +548,34 @@ public class WeighingViewModel : BindableBase, INavigationAware
         if (item == null || OpenEditQueueDialog == null) return;
         bool updated = await OpenEditQueueDialog(item);
         if (updated) await RefreshQueueAsync();
+    }
+
+    private void OnChartPointDown(ChartPoint pt)
+    {
+        if (pt is null) return;
+        double x = pt.Coordinate.SecondaryValue;
+
+        // 高亮被点击的柱（立即生效，对话框打开前可见）
+        RoundedRectangleGeometry? geo = pt.Context.Visual as RoundedRectangleGeometry;
+        if (geo is not null)
+            geo.Fill = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x80));
+
+        // 延迟到 Background 优先级，确保 Mouse Up 先被 Chart 处理，避免拖动残留
+        _dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+        {
+            System.Windows.Input.Mouse.Capture(null);   // 释放 Chart 可能已捕获的鼠标
+
+            Window? win = null;
+            if (_receivePointMap.TryGetValue(x, out var rec))
+                win = new ReceiveDetailWindow { DataContext = rec, Owner = Application.Current.MainWindow };
+            else if (_deliveryPointMap.TryGetValue(x, out var del))
+                win = new DeliveryDetailWindow { DataContext = del, Owner = Application.Current.MainWindow };
+
+            win?.ShowDialog();
+
+            // 对话框关闭后：取消高亮 + 确保鼠标释放
+            if (geo is not null) geo.Fill = null;
+            System.Windows.Input.Mouse.Capture(null);
+        });
     }
 }

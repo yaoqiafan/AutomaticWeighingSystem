@@ -1,9 +1,12 @@
 using AWS.Core.Entities;
 using AWS.Core.Interfaces;
 using AWS.Data;
+using AWS.UI.Views.Charts;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.EntityFrameworkCore;
 using Prism.Commands;
@@ -12,6 +15,7 @@ using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using SkiaSharp;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace AWS.UI.ViewModels.Statistics;
@@ -25,6 +29,9 @@ public class DashboardViewModel : BindableBase, INavigationAware
     private readonly IContainerProvider _container;
     private readonly AwsDbContext _db;
     private readonly DispatcherTimer _timer;
+
+    private Dictionary<double, WeighingArchiveRecord> _receivePointMap = [];
+    private Dictionary<double, DeliveryRecord> _deliveryPointMap = [];
 
     // ── 统计卡片 ──────────────────────────────────────────────
     private string _todayReceiveWeight = "0 kg";
@@ -184,6 +191,7 @@ public class DashboardViewModel : BindableBase, INavigationAware
     public DelegateCommand ShowInventoryTrendCommand { get; }
     public DelegateCommand SwitchToReceiveTabCommand { get; }
     public DelegateCommand SwitchToDeliveryTabCommand { get; }
+    public DelegateCommand<ChartPoint> ChartPointDownCommand { get; }
 
     public DashboardViewModel(
         IWeighingService weighing,
@@ -229,6 +237,7 @@ public class DashboardViewModel : BindableBase, INavigationAware
         ShowInventoryTrendCommand = new DelegateCommand(OpenInventoryTrendWindow);
         SwitchToReceiveTabCommand = new DelegateCommand(() => ShowDeliveryTab = false);
         SwitchToDeliveryTabCommand = new DelegateCommand(() => ShowDeliveryTab = true);
+        ChartPointDownCommand = new DelegateCommand<ChartPoint>(OnChartPointDown);
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
         _timer.Tick += async (_, _) => await RefreshAsync();
@@ -273,7 +282,6 @@ public class DashboardViewModel : BindableBase, INavigationAware
             TodayExpenditure = totalAmount > 0 ? $"¥ {totalAmount:N2}" : "¥ --";
 
             // 今日送货
-            var hourlyDelivery = await _delivery.GetTodayHourlyWeightAsync();
             var deliveryWeight = await _delivery.GetTodayTotalWeightAsync();
             var income = await _delivery.GetTodayTotalAmountAsync();
             TodayDeliveryWeight = $"{deliveryWeight / divisor:N1} {unitLabel}";
@@ -289,42 +297,44 @@ public class DashboardViewModel : BindableBase, INavigationAware
             var receiveRecords = await _archive.QueryAsync(today.Year, today, today.AddDays(1).AddSeconds(-1));
             _allReceiveRecords = receiveRecords.OrderByDescending(r => r.ArchivedAt).ToList();
 
-            // ── 品类折线：每笔记录一个点，X = 实际时分（小数小时） ─
+            // 今日送货明细（同时用于送货折线图）
+            _allDeliveryRecords = await _delivery.GetTodayRecordsAsync();
+
+            // ── 品类柱：每笔收货一个点，X 含秒精度确保唯一，Y = 该笔净重 ─
+            static double ToX(DateTime t) => t.Hour + t.Minute / 60.0 + t.Second / 3600.0;
+            _receivePointMap  = receiveRecords.ToDictionary(r => ToX(r.ArchivedAt), r => r);
+            _deliveryPointMap = _allDeliveryRecords.ToDictionary(r => ToX(r.DeliveryTime), r => r);
+
             var categoryPoints = receiveRecords
                 .GroupBy(r => r.GoodsName)
                 .OrderBy(g => g.Key)
                 .ToDictionary(
                     g => g.Key,
-                    g =>
-                    {
-                        double cat = 0;
-                        return g.OrderBy(r => r.ArchivedAt)
-                                .Select(r =>
-                                {
-                                    cat += r.NetWeight;
-                                    return new ObservablePoint(
-                                        r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
-                                        cat);
-                                })
-                                .ToArray();
-                    });
+                    g => g.OrderBy(r => r.ArchivedAt)
+                           .Select(r => new ObservablePoint(ToX(r.ArchivedAt), r.NetWeight))
+                           .ToArray());
 
-            // ── 汇总折线：每笔记录一个点，Y = 到该时刻的累计净重 ─
-            double running = 0;
-            var summaryPoints = receiveRecords
-                .OrderBy(r => r.ArchivedAt)
-                .Select(r =>
+            // ── 送货柱：每笔送货一个点，X 含秒精度，Y = 该笔送货重量 ─
+            var deliveryPoints = _allDeliveryRecords
+                .OrderBy(r => r.DeliveryTime)
+                .Select(r => new ObservablePoint(ToX(r.DeliveryTime), r.TotalWeight))
+                .ToArray();
+
+            // ── 汇总阶梯线：收货 +，送货 −，按时间顺序逐笔累计 ─────
+            double sRunning = 0;
+            var summaryPoints = receiveRecords.Select(r => (Time: r.ArchivedAt, Weight: r.NetWeight, IsDelivery: false))
+                .Concat(_allDeliveryRecords.Select(r => (Time: r.DeliveryTime, Weight: r.TotalWeight, IsDelivery: true)))
+                .OrderBy(e => e.Time)
+                .Select(e =>
                 {
-                    running += r.NetWeight;
-                    return new ObservablePoint(
-                        r.ArchivedAt.Hour + r.ArchivedAt.Minute / 60.0,
-                        running);
+                    sRunning += e.IsDelivery ? -e.Weight : e.Weight;
+                    return new ObservablePoint(ToX(e.Time), sRunning);
                 })
                 .ToArray();
 
-            // ── 送货折线：按整点小时 ──────────────────────────────
-            var deliveryPoints = hourlyDelivery
-                .Select((v, i) => new ObservablePoint(i, v))
+            // 送货柱取负值，使其显示在 X 轴下方
+            var deliveryNegPoints = deliveryPoints
+                .Select(p => new ObservablePoint(p.X, p.Y.HasValue ? -p.Y.Value : (double?)null))
                 .ToArray();
 
             HourlySeries.Clear();
@@ -333,41 +343,39 @@ public class DashboardViewModel : BindableBase, INavigationAware
             foreach (var (goodsName, pts) in categoryPoints)
             {
                 var clr = _categoryColors[ci++ % _categoryColors.Length];
-                HourlySeries.Add(new LineSeries<ObservablePoint>
+                HourlySeries.Add(new ColumnSeries<ObservablePoint>
                 {
                     Values = pts,
                     Name = goodsName,
-                    Fill = null,
-                    GeometrySize = 8,
-                    Stroke = new SolidColorPaint(clr, 2),
-                    GeometryFill = new SolidColorPaint(clr),
-                    GeometryStroke = null,
-                    LineSmoothness = 0,
+                    Fill = new SolidColorPaint(clr),
+                    Stroke = null,
+                    MaxBarWidth = 18,
+                    IgnoresBarPosition = true,
                 });
             }
 
-            HourlySeries.Add(new LineSeries<ObservablePoint>
+            if (deliveryNegPoints.Length > 0)
+            {
+                HourlySeries.Add(new ColumnSeries<ObservablePoint>
+                {
+                    Values = deliveryNegPoints,
+                    Name = "送货重量",
+                    Fill = new SolidColorPaint(new SKColor(0x66, 0xBB, 0x6A)),
+                    Stroke = null,
+                    MaxBarWidth = 18,
+                    IgnoresBarPosition = true,
+                });
+            }
+
+            HourlySeries.Add(new StepLineSeries<ObservablePoint>
             {
                 Values = summaryPoints,
-                Name = "汇总",
+                Name = "净库存变化",
                 Fill = null,
                 GeometrySize = 6,
                 Stroke = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0), 2.5f),
                 GeometryFill = new SolidColorPaint(new SKColor(0xE0, 0xE0, 0xE0)),
                 GeometryStroke = null,
-                LineSmoothness = 0,
-            });
-
-            HourlySeries.Add(new LineSeries<ObservablePoint>
-            {
-                Values = deliveryPoints,
-                Name = "送货重量",
-                Fill = null,
-                GeometrySize = 6,
-                Stroke = new SolidColorPaint(new SKColor(0x66, 0xBB, 0x6A), 2),
-                GeometryFill = new SolidColorPaint(new SKColor(0x66, 0xBB, 0x6A)),
-                GeometryStroke = null,
-                LineSmoothness = 0,
             });
 
             XAxes[0].MinLimit = null;
@@ -380,8 +388,6 @@ public class DashboardViewModel : BindableBase, INavigationAware
             RaisePropertyChanged(nameof(TotalPageCount));
             UpdatePagedReceiveRecords();
 
-            // 今日送货明细
-            _allDeliveryRecords = await _delivery.GetTodayRecordsAsync();
             _deliveryPageIndex = 1;
             RaisePropertyChanged(nameof(DeliveryPageIndex));
             RaisePropertyChanged(nameof(DeliveryTotalPageCount));
@@ -494,5 +500,31 @@ public class DashboardViewModel : BindableBase, INavigationAware
         foreach (var r in _allDeliveryRecords.Skip((_deliveryPageIndex - 1) * _deliveryPageSize).Take(_deliveryPageSize))
             TodayDeliveryRecords.Add(r);
         RaisePropertyChanged(nameof(DeliveryTotalPageCount));
+    }
+
+    private void OnChartPointDown(ChartPoint pt)
+    {
+        if (pt is null) return;
+        double x = pt.Coordinate.SecondaryValue;
+
+        RoundedRectangleGeometry? geo = pt.Context.Visual as RoundedRectangleGeometry;
+        if (geo is not null)
+            geo.Fill = new SolidColorPaint(new SKColor(0xFF, 0xFF, 0xFF, 0x80));
+
+        Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+        {
+            System.Windows.Input.Mouse.Capture(null);
+
+            Window? win = null;
+            if (_receivePointMap.TryGetValue(x, out var rec))
+                win = new ReceiveDetailWindow { DataContext = rec, Owner = Application.Current.MainWindow };
+            else if (_deliveryPointMap.TryGetValue(x, out var del))
+                win = new DeliveryDetailWindow { DataContext = del, Owner = Application.Current.MainWindow };
+
+            win?.ShowDialog();
+
+            if (geo is not null) geo.Fill = null;
+            System.Windows.Input.Mouse.Capture(null);
+        });
     }
 }

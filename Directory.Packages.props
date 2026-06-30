@@ -10,6 +10,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5" />
     <PackageVersion Include="NPOI" Version="2.7.2" />
     <PackageVersion Include="System.IO.Ports" Version="9.0.5" />
-    <PackageVersion Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
+    <PackageVersion Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
   </ItemGroup>
 </Project>

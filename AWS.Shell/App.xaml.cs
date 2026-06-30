@@ -153,15 +153,14 @@ public partial class App : PrismApplication
                 .LoginAsync("superuser", DateTime.Now.ToString("yyyyMMddHH00"))
                 .GetAwaiter().GetResult();
         }
+#pragma warning disable CS0162 // DevAutoLogin is a dev-time constant; else branch is dead until set to false
         else
         {
             var login = Container.Resolve<LoginWindow>();
             if (login.ShowDialog() != true)
-            {
                 Environment.Exit(0);
-                return null!;
-            }
         }
+#pragma warning restore CS0162
 
         return Container.Resolve<MainWindow>();
     }
@@ -310,8 +309,8 @@ public partial class App : PrismApplication
         {
             try
             {
-                db.Database.ExecuteSqlRaw(
-                    $"INSERT OR IGNORE INTO SystemSettings (Key, Value) VALUES ('{key}', '{val}')");
+                db.Database.ExecuteSql(
+                    $"INSERT OR IGNORE INTO SystemSettings (Key, Value) VALUES ({key}, {val})");
             }
             catch { }
         }
@@ -329,8 +328,10 @@ public partial class App : PrismApplication
             reader.Close();
             foreach (var tbl in tables)
             {
+#pragma warning disable EF1002 // tbl comes from sqlite_master, not user input
                 try { db.Database.ExecuteSqlRaw($"ALTER TABLE {tbl} ADD COLUMN FirstWeighImagePath TEXT"); } catch { }
                 try { db.Database.ExecuteSqlRaw($"ALTER TABLE {tbl} ADD COLUMN SecondWeighImagePath TEXT"); } catch { }
+#pragma warning restore EF1002
             }
         }
         catch { }

@@ -1,14 +1,16 @@
-<pf:Window x:Class="AWS.UI.Views.Settings.SerialPortConfigsDialogWindow"
-           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-           xmlns:sys="clr-namespace:System;assembly=mscorlib"
-           xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
-           Title="串口设备配置"
-           Width="660" Height="420"
-           WindowStartupLocation="CenterOwner"
-           ResizeMode="NoResize"
-           ShowInTaskbar="False"
-           ShowNonClientArea="False">
+<pf:Window
+    x:Class="AWS.UI.Views.Settings.SerialPortConfigsDialogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    Title="串口设备配置"
+    Width="660"
+    Height="420"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    ShowNonClientArea="False"
+    WindowStartupLocation="CenterOwner">
 
     <pf:Window.Resources>
         <x:Array x:Key="BaudRateOptions" Type="sys:Int32">
@@ -27,92 +29,97 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 设备列表 -->
-        <DataGrid Grid.Row="0"
-                  x:Name="DeviceGrid"
-                  ItemsSource="{Binding Devices}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  CanUserReorderColumns="False"
-                  CanUserResizeRows="False"
-
-                  SelectionMode="Single"
-
-                  BorderThickness="1">
+        <!--  设备列表  -->
+        <DataGrid
+            x:Name="DeviceGrid"
+            Grid.Row="0"
+            AutoGenerateColumns="False"
+            BorderThickness="1"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            CanUserReorderColumns="False"
+            CanUserResizeRows="False"
+            ItemsSource="{Binding Devices}"
+            SelectionMode="Single">
 
             <DataGrid.Columns>
 
-                <!-- 启用 -->
-                <DataGridTemplateColumn Header="启用" Width="48">
+                <!--  启用  -->
+                <DataGridTemplateColumn Width="48" Header="启用">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 模拟模式 -->
-                <DataGridTemplateColumn Header="模拟" Width="52">
+                <!--  模拟模式  -->
+                <DataGridTemplateColumn Width="52" Header="模拟">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox IsChecked="{Binding IsSimulationMode, UpdateSourceTrigger=PropertyChanged}"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      ToolTip="启用后使用软件模拟数据，不实际连接串口" />
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsSimulationMode, UpdateSourceTrigger=PropertyChanged}"
+                                ToolTip="启用后使用软件模拟数据，不实际连接串口" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 串口名称 -->
-                <DataGridTemplateColumn Header="串口名称" Width="130">
+                <!--  串口名称  -->
+                <DataGridTemplateColumn Width="130" Header="串口名称">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox IsEditable="True"
-                                      Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{Binding DataContext.AvailablePorts,
-                                          RelativeSource={RelativeSource AncestorType=pf:Window}}"
-                                      Margin="2" />
+                            <ComboBox
+                                Margin="2"
+                                IsEditable="True"
+                                ItemsSource="{Binding DataContext.AvailablePorts, RelativeSource={RelativeSource AncestorType=pf:Window}}"
+                                Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 波特率 -->
-                <DataGridTemplateColumn Header="波特率" Width="110">
+                <!--  波特率  -->
+                <DataGridTemplateColumn Width="110" Header="波特率">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox SelectedValue="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{StaticResource BaudRateOptions}"
-                                      Margin="2" />
+                            <ComboBox
+                                Margin="2"
+                                ItemsSource="{StaticResource BaudRateOptions}"
+                                SelectedValue="{Binding BaudRate, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 称重用途 -->
-                <DataGridTemplateColumn Header="称重用途" Width="*">
+                <!--  称重用途  -->
+                <DataGridTemplateColumn Width="*" Header="称重用途">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox SelectedValue="{Binding WeighModeDisplay, UpdateSourceTrigger=PropertyChanged}"
-                                      ItemsSource="{Binding DataContext.WeighModeOptions,
-                                          RelativeSource={RelativeSource AncestorType=pf:Window}}"
-                                      Margin="2" />
+                            <ComboBox
+                                Margin="2"
+                                ItemsSource="{Binding DataContext.WeighModeOptions, RelativeSource={RelativeSource AncestorType=pf:Window}}"
+                                SelectedValue="{Binding WeighModeDisplay, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <!-- 删除 -->
-                <DataGridTemplateColumn Header="" Width="50">
+                <!--  删除  -->
+                <DataGridTemplateColumn Width="50" Header="">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="✕"
-                                    Width="28" Height="24"
-                                    FontSize="11"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Foreground="#EF5350"
-                                    Command="{Binding DataContext.RemoveCommand,
-                                        RelativeSource={RelativeSource AncestorType=pf:Window}}"
-                                    CommandParameter="{Binding}" />
+                            <Button
+                                Width="28"
+                                Height="24"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=pf:Window}}"
+                                CommandParameter="{Binding}"
+                                Content="✕"
+                                FontSize="11"
+                                Foreground="#EF5350" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -120,31 +127,38 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- 添加按钮 -->
-        <Button Grid.Row="1"
-                Content="＋ 添加设备"
-                HorizontalAlignment="Left"
-                Width="110" Height="30"
-                Margin="0,8,0,0"
-                Command="{Binding AddCommand}" />
+        <!--  添加按钮  -->
+        <Button
+            Grid.Row="1"
+            Width="110"
+            Height="30"
+            Margin="0,8,0,0"
+            HorizontalAlignment="Left"
+            Command="{Binding AddCommand}"
+            Content="＋ 添加设备" />
 
-        <!-- 确定 / 取消 -->
-        <StackPanel Grid.Row="2"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,12,0,0">
-            <Button Content="取消"
-                    Width="72" Height="30"
-                    Margin="0,0,8,0"
-                    Click="OnCancelClick"
-                    Background="Transparent"
-                    BorderThickness="1" />
-            <Button Content="确定"
-                    Width="72" Height="30"
-                    Click="OnOkClick"
-                    Background="#4CAF50"
-                    Foreground="White"
-                    BorderThickness="0" />
+        <!--  确定 / 取消  -->
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,12,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                Width="72"
+                Height="30"
+                Margin="0,0,8,0"
+                Background="Transparent"
+                BorderThickness="1"
+                Click="OnCancelClick"
+                Content="取消" />
+            <Button
+                Width="72"
+                Height="30"
+                Background="#4CAF50"
+                BorderThickness="0"
+                Click="OnOkClick"
+                Content="确定"
+                Foreground="White" />
         </StackPanel>
     </Grid>
 

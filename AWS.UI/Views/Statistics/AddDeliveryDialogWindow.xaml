@@ -1,11 +1,14 @@
-<pf:Window x:Class="AWS.UI.Views.Statistics.AddDeliveryDialogWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
-        Title="新建送货单" Width="580" SizeToContent="Height"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        Background="{DynamicResource WindowBrush}">
+<pf:Window
+    x:Class="AWS.UI.Views.Statistics.AddDeliveryDialogWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pf="clr-namespace:PF.UI.Controls;assembly=PF.UI.Controls"
+    Title="新建送货单"
+    Width="580"
+    Background="{DynamicResource WindowBrush}"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    WindowStartupLocation="CenterOwner">
 
     <pf:Window.Resources>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
@@ -22,22 +25,29 @@
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />   <!-- 客户 + 送货时间 -->
+            <RowDefinition Height="Auto" />   
+            <!--  客户 + 送货时间  -->
             <RowDefinition Height="14" />
-            <RowDefinition Height="Auto" />   <!-- 货物明细 标签 + 添加行 -->
+            <RowDefinition Height="Auto" />   
+            <!--  货物明细 标签 + 添加行  -->
             <RowDefinition Height="6" />
-            <RowDefinition Height="Auto" />   <!-- 列头 -->
+            <RowDefinition Height="Auto" />   
+            <!--  列头  -->
             <RowDefinition Height="4" />
-            <RowDefinition Height="Auto" />   <!-- ItemsControl -->
+            <RowDefinition Height="Auto" />   
+            <!--  ItemsControl  -->
             <RowDefinition Height="10" />
-            <RowDefinition Height="Auto" />   <!-- 合计 -->
+            <RowDefinition Height="Auto" />   
+            <!--  合计  -->
             <RowDefinition Height="14" />
-            <RowDefinition Height="Auto" />   <!-- 备注 -->
+            <RowDefinition Height="Auto" />   
+            <!--  备注  -->
             <RowDefinition Height="20" />
-            <RowDefinition Height="Auto" />   <!-- 按钮 -->
+            <RowDefinition Height="Auto" />   
+            <!--  按钮  -->
         </Grid.RowDefinitions>
 
-        <!-- 客户 + 送货时间 -->
+        <!--  客户 + 送货时间  -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -45,27 +55,37 @@
                 <ColumnDefinition Width="190" />
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <TextBlock Text="客户（买家）" Style="{StaticResource FieldLabel}" />
-                <ComboBox Height="32" ItemsSource="{Binding AvailableBuyers}"
-                          SelectedItem="{Binding SelectedCustomer}"
-                          DisplayMemberPath="Name" />
+                <TextBlock Style="{StaticResource FieldLabel}" Text="客户（买家）" />
+                <ComboBox
+                    Height="32"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{Binding AvailableBuyers}"
+                    SelectedItem="{Binding SelectedCustomer}" />
             </StackPanel>
             <StackPanel Grid.Column="2">
-                <TextBlock Text="送货时间" Style="{StaticResource FieldLabel}" />
+                <TextBlock Style="{StaticResource FieldLabel}" Text="送货时间" />
                 <DatePicker Height="32" SelectedDate="{Binding DeliveryTime}" />
             </StackPanel>
         </Grid>
 
-        <!-- 货物明细 标签 + 添加行 -->
+        <!--  货物明细 标签 + 添加行  -->
         <Grid Grid.Row="2">
-            <TextBlock Text="货物明细" VerticalAlignment="Center"
-                       Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13" FontWeight="SemiBold" />
-            <Button HorizontalAlignment="Right" Width="72" Height="26" FontSize="12"
-                    Content="＋ 添加行"
-                    Command="{Binding AddItemLineCommand}" />
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource PrimaryTextBrush}"
+                Text="货物明细" />
+            <Button
+                Width="72"
+                Height="26"
+                HorizontalAlignment="Right"
+                Command="{Binding AddItemLineCommand}"
+                Content="＋ 添加行"
+                FontSize="12" />
         </Grid>
 
-        <!-- 列头 -->
+        <!--  列头  -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="160" />
@@ -83,13 +103,22 @@
             <TextBlock Grid.Column="2" Style="{StaticResource ColHeader}">
                 <Run Text="重量（" /><Run Text="{Binding WeightUnit, Mode=OneWay}" /><Run Text="）" />
             </TextBlock>
-            <TextBlock Grid.Column="4" Text="金额（元）" Style="{StaticResource ColHeader}" />
-            <TextBlock Grid.Column="6" Text="单价（元/kg）" Style="{StaticResource ColHeader}" />
+            <TextBlock
+                Grid.Column="4"
+                Style="{StaticResource ColHeader}"
+                Text="金额（元）" />
+            <TextBlock
+                Grid.Column="6"
+                Style="{StaticResource ColHeader}"
+                Text="单价（元/kg）" />
         </Grid>
 
-        <!-- 品类明细行列表 -->
-        <ScrollViewer Grid.Row="6" MaxHeight="220" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding ItemLines}" x:Name="ItemsHost">
+        <!--  品类明细行列表  -->
+        <ScrollViewer
+            Grid.Row="6"
+            MaxHeight="220"
+            VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="ItemsHost" ItemsSource="{Binding ItemLines}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid Margin="0,0,0,6">
@@ -103,78 +132,138 @@
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="30" />
                             </Grid.ColumnDefinitions>
-                            <!-- 货物选择 -->
-                            <ComboBox Grid.Column="0" Height="30"
-                                      ItemsSource="{Binding DataContext.GoodsCategories, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                      SelectedItem="{Binding SelectedGoods}"
-                                      DisplayMemberPath="Name" />
-                            <!-- 重量 -->
-                            <TextBox Grid.Column="2" Height="30" Padding="6,0" VerticalContentAlignment="Center"
-                                     Text="{Binding WeightText, UpdateSourceTrigger=PropertyChanged}" />
-                            <!-- 金额（用户录入） -->
-                            <TextBox Grid.Column="4" Height="30" Padding="6,0" VerticalContentAlignment="Center"
-                                     Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
-                            <!-- 单价（反算只读：金额÷重量） -->
-                            <Border Grid.Column="6" Height="30" Background="{DynamicResource RegionBrush}"
-                                    CornerRadius="4" Padding="6,0">
-                                <TextBlock VerticalAlignment="Center" FontSize="12"
-                                           Text="{Binding UnitPrice, StringFormat=N4, TargetNullValue='—'}" />
+                            <!--  货物选择  -->
+                            <ComboBox
+                                Grid.Column="0"
+                                Height="30"
+                                DisplayMemberPath="Name"
+                                ItemsSource="{Binding DataContext.GoodsCategories, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                SelectedItem="{Binding SelectedGoods}" />
+                            <!--  重量  -->
+                            <TextBox
+                                Grid.Column="2"
+                                Height="30"
+                                Padding="6,0"
+                                VerticalContentAlignment="Center"
+                                Text="{Binding WeightText, UpdateSourceTrigger=PropertyChanged}" />
+                            <!--  金额（用户录入）  -->
+                            <TextBox
+                                Grid.Column="4"
+                                Height="30"
+                                Padding="6,0"
+                                VerticalContentAlignment="Center"
+                                Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
+                            <!--  单价（反算只读：金额÷重量）  -->
+                            <Border
+                                Grid.Column="6"
+                                Height="30"
+                                Padding="6,0"
+                                Background="{DynamicResource RegionBrush}"
+                                CornerRadius="4">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{Binding UnitPrice, StringFormat=N4, TargetNullValue='—'}" />
                             </Border>
-                            <!-- 删除 -->
-                            <Button Grid.Column="7" Width="24" Height="24" Content="×"
-                                    FontSize="14" Padding="0" HorizontalContentAlignment="Center"
-                                    Command="{Binding DataContext.RemoveItemLineCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                    CommandParameter="{Binding}" />
+                            <!--  删除  -->
+                            <Button
+                                Grid.Column="7"
+                                Width="24"
+                                Height="24"
+                                Padding="0"
+                                HorizontalContentAlignment="Center"
+                                Command="{Binding DataContext.RemoveItemLineCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}"
+                                Content="×"
+                                FontSize="14" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
-        <!-- 合计 -->
-        <Border Grid.Row="8" Background="{DynamicResource RegionBrush}" CornerRadius="6" Padding="12,8">
+        <!--  合计  -->
+        <Border
+            Grid.Row="8"
+            Padding="12,8"
+            Background="{DynamicResource RegionBrush}"
+            CornerRadius="6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="160" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Style="{StaticResource FieldLabel}" Margin="0" VerticalAlignment="Center" Text="总重量：" />
-                    <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"
-                               VerticalAlignment="Center"
-                               Text="{Binding TotalWeight, StringFormat=N2}" />
-                    <TextBlock Margin="4,0,0,0" VerticalAlignment="Center"
-                               Foreground="{DynamicResource SecondaryTextBrush}"
-                               Text="{Binding WeightUnit, Mode=OneWay}" />
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource FieldLabel}"
+                        Text="总重量：" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Text="{Binding TotalWeight, StringFormat=N2}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="{Binding WeightUnit, Mode=OneWay}" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <TextBlock Style="{StaticResource FieldLabel}" Margin="0" VerticalAlignment="Center" Text="总金额：" />
-                    <TextBlock FontSize="20" FontWeight="Bold" Foreground="#4CAF50" VerticalAlignment="Center">
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource FieldLabel}"
+                        Text="总金额：" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="20"
+                        FontWeight="Bold"
+                        Foreground="#4CAF50">
                         <Run Text="¥ " /><Run Text="{Binding TotalAmount, Mode=OneWay, StringFormat=N2}" />
                     </TextBlock>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 备注 -->
+        <!--  备注  -->
         <StackPanel Grid.Row="10">
-            <TextBlock Text="备注" Style="{StaticResource FieldLabel}" />
-            <TextBox Height="32" Padding="8,0" VerticalContentAlignment="Center"
-                     Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Style="{StaticResource FieldLabel}" Text="备注" />
+            <TextBox
+                Height="32"
+                Padding="8,0"
+                VerticalContentAlignment="Center"
+                Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
 
-        <!-- 按钮 -->
+        <!--  按钮  -->
         <Grid Grid.Row="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="12" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Content="取  消" Height="38" FontSize="13"
-                    Command="{Binding CancelCommand}" />
-            <Button Grid.Column="2" Content="确  认" Height="38" FontSize="13"
-                    Command="{Binding ConfirmCommand}"
-                    Background="#388E3C" Foreground="White" FontWeight="SemiBold" />
+            <Button
+                Grid.Column="0"
+                Height="38"
+                Command="{Binding CancelCommand}"
+                Content="取  消"
+                FontSize="13" />
+            <Button
+                Grid.Column="2"
+                Height="38"
+                Background="#388E3C"
+                Command="{Binding ConfirmCommand}"
+                Content="确  认"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="White" />
         </Grid>
     </Grid>
 </pf:Window>
