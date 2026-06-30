@@ -69,6 +69,14 @@ public class SecondWeighDialogViewModel : BindableBase
     private double _totalAmount;
     public double TotalAmount { get => _totalAmount; private set => SetProperty(ref _totalAmount, value); }
 
+    // ── 采集时抓取的图片路径 ─────────────────────────────────
+    private string? _capturedImagePath;
+    public string? CapturedImagePath
+    {
+        get => _capturedImagePath;
+        private set => SetProperty(ref _capturedImagePath, value);
+    }
+
     // ── 备注 ────────────────────────────────────────────────
     private string _remark = string.Empty;
     public string Remark { get => _remark; set => SetProperty(ref _remark, value); }
@@ -103,12 +111,25 @@ public class SecondWeighDialogViewModel : BindableBase
         _dispatcher = Dispatcher.CurrentDispatcher;
 
         CaptureCommand = new DelegateCommand(
-            () => CapturedSecondWeight = CurrentWeight,
+            async () => await OnCaptureAsync(),
             () => IsStable);
         ConfirmCommand = new DelegateCommand(OnConfirm, () => HasCapturedWeight);
         CancelCommand = new DelegateCommand(() => CloseWindow?.Invoke());
 
         _serial.WeightReceived += OnWeightReceived;
+    }
+
+    private async Task OnCaptureAsync()
+    {
+        // 锁定当前重量
+        CapturedSecondWeight = CurrentWeight;
+
+        // 同步抓取二次称重图片
+        if (_camera.IsLoggedIn)
+        {
+            var path = _imageStorage.BuildPath(QueueItem.TicketNo, "second");
+            CapturedImagePath = await _camera.CaptureJpegAsync(_captureChannel, path);
+        }
     }
 
     public void Detach() => _serial.WeightReceived -= OnWeightReceived;
@@ -148,14 +169,7 @@ public class SecondWeighDialogViewModel : BindableBase
         double? price = double.TryParse(PriceText, out double p) && p > 0 ? p : null;
         try
         {
-            string? secondImagePath = null;
-            if (_camera.IsLoggedIn)
-            {
-                var path = _imageStorage.BuildPath(QueueItem.TicketNo, "second");
-                secondImagePath = await _camera.CaptureJpegAsync(_captureChannel, path);
-            }
-
-            await _archiveFunc(QueueItem.Id, _capturedSecondWeight.Value, price, secondImagePath);
+            await _archiveFunc(QueueItem.Id, _capturedSecondWeight.Value, price, _capturedImagePath);
             _log.Info($"二次称重存档完成：{QueueItem.TicketNo} 净重 {NetWeight:F1}kg", "二次称重");
             Succeeded = true;
             Detach();
