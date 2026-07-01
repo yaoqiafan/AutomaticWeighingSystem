@@ -41,7 +41,18 @@
                     SelectedItem="{Binding SelectedInventoryCategory}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding ., TargetNullValue='全部品类'}" />
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding .}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding .}" Value="">
+                                                <Setter Property="Text" Value="全部品类" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

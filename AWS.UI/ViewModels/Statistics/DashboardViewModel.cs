@@ -84,9 +84,9 @@ public class DashboardViewModel : BindableBase, INavigationAware
         }
     ];
 
-    public ObservableCollection<string?> InventoryCategories { get; } = [];
-    private string? _selectedInventoryCategory;
-    public string? SelectedInventoryCategory
+    public ObservableCollection<string> InventoryCategories { get; } = [];
+    private string _selectedInventoryCategory = "";
+    public string SelectedInventoryCategory
     {
         get => _selectedInventoryCategory;
         set
@@ -263,7 +263,7 @@ public class DashboardViewModel : BindableBase, INavigationAware
             .ToListAsync();
 
         InventoryCategories.Clear();
-        InventoryCategories.Add(null); // 全部
+        InventoryCategories.Add(""); // 全部品类（空字符串作哨兵）
         foreach (var g in goods) InventoryCategories.Add(g);
     }
 
@@ -408,9 +408,9 @@ public class DashboardViewModel : BindableBase, INavigationAware
         try
         {
             var from = DateTime.Today.AddDays(-(_inventoryDays - 1));
-            var to = DateTime.Today;
+            var to = DateTime.Today.AddDays(1).AddSeconds(-1); // 今天 23:59:59，包含当天全部数据
 
-            var cats = _selectedInventoryCategory != null
+            var cats = !string.IsNullOrEmpty(_selectedInventoryCategory)
                 ? new[] { _selectedInventoryCategory }
                 : null;
 
